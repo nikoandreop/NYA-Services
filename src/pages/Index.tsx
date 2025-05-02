@@ -1,12 +1,28 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import LoginForm from '@/components/login-form';
+import Dashboard from '@/components/dashboard';
 
 const Index = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userName, setUserName] = useState('');
+
+  const handleLogin = (username: string, password: string) => {
+    // In a real app, you would validate with Authelia or another auth provider
+    // This is just a simulation for the demo
+    setUserName(username);
+    setIsLoggedIn(true);
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="min-h-screen w-full">
+      {!isLoggedIn ? (
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <LoginForm onLogin={handleLogin} />
+        </div>
+      ) : (
+        <Dashboard userName={userName} />
+      )}
     </div>
   );
 };
