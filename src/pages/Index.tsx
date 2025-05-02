@@ -18,13 +18,29 @@ const Index = () => {
         title: "Login successful",
         description: "Welcome to NYA Services",
       });
+    } else if (username === 'admin' && password === 'admin') {
+      setUserName(username);
+      setIsLoggedIn(true);
+      toast({
+        title: "Admin Login successful",
+        description: "Welcome to NYA Services Admin",
+      });
     } else {
       toast({
         title: "Login failed",
-        description: "Invalid username or password. Try demo/password",
+        description: "Invalid username or password. Try demo/password or admin/admin",
         variant: "destructive",
       });
     }
+  };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setUserName('');
+    toast({
+      title: "Logged out",
+      description: "You have been logged out successfully",
+    });
   };
 
   return (
@@ -34,7 +50,7 @@ const Index = () => {
           <LoginForm onLogin={handleLogin} />
         </div>
       ) : (
-        <Dashboard userName={userName} />
+        <Dashboard userName={userName} onLogout={handleLogout} />
       )}
     </div>
   );
