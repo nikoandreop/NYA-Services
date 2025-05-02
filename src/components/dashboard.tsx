@@ -5,6 +5,9 @@ import Clock from './clock';
 import WeatherWidget from './weather-widget';
 import SearchBar from './search-bar';
 import ServicesGrid from './services-grid';
+import Announcements from './announcements';
+import Helpdesk from './helpdesk';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 
 interface DashboardProps {
   userName: string;
@@ -27,10 +30,28 @@ const Dashboard: React.FC<DashboardProps> = ({ userName }) => {
         </div>
       </div>
       
-      <section className="mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-white/80">Your Services</h2>
-        <ServicesGrid />
-      </section>
+      <div className="mb-8">
+        <Announcements />
+      </div>
+      
+      <Tabs defaultValue="services" className="mb-8">
+        <TabsList className="mb-4">
+          <TabsTrigger value="services">Services</TabsTrigger>
+          <TabsTrigger value="helpdesk">Helpdesk</TabsTrigger>
+        </TabsList>
+        <TabsContent value="services">
+          <section>
+            <h2 className="text-xl font-semibold mb-4 text-white/80">Your Services</h2>
+            <ServicesGrid />
+          </section>
+        </TabsContent>
+        <TabsContent value="helpdesk">
+          <section>
+            <h2 className="text-xl font-semibold mb-4 text-white/80">Helpdesk</h2>
+            <Helpdesk />
+          </section>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
