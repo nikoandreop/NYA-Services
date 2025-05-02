@@ -21,30 +21,29 @@ const Dashboard: React.FC<DashboardProps> = ({ userName }) => {
       </header>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        <div className="md:col-span-2">
+        <div className="md:col-span-3">
           <SearchBar />
         </div>
         <div className="grid grid-cols-2 gap-4">
           <Clock />
           <WeatherWidget />
         </div>
+        <div className="md:col-span-2">
+          <Announcements />
+        </div>
       </div>
       
       <div className="mb-8">
-        <Announcements />
+        <section>
+          <h2 className="text-xl font-semibold mb-4 text-white/80">Your Services</h2>
+          <ServicesGrid />
+        </section>
       </div>
       
-      <Tabs defaultValue="services" className="mb-8">
+      <Tabs defaultValue="helpdesk" className="mb-8">
         <TabsList className="mb-4">
-          <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="helpdesk">Helpdesk</TabsTrigger>
         </TabsList>
-        <TabsContent value="services">
-          <section>
-            <h2 className="text-xl font-semibold mb-4 text-white/80">Your Services</h2>
-            <ServicesGrid />
-          </section>
-        </TabsContent>
         <TabsContent value="helpdesk">
           <section>
             <h2 className="text-xl font-semibold mb-4 text-white/80">Helpdesk</h2>

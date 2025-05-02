@@ -26,7 +26,6 @@ const mockTickets = [
 
 const Helpdesk = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [newRequest, setNewRequest] = useState({ title: "", type: "Movie", description: "" });
   const [newTicket, setNewTicket] = useState({ subject: "", description: "", priority: "Medium" });
   const { toast } = useToast();
   
@@ -39,15 +38,6 @@ const Helpdesk = () => {
     ticket.id.toLowerCase().includes(searchQuery.toLowerCase()) || 
     ticket.subject.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
-  const handleRequestSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    toast({
-      title: "Request Submitted",
-      description: `Your request for "${newRequest.title}" has been submitted successfully.`,
-    });
-    setNewRequest({ title: "", type: "Movie", description: "" });
-  };
 
   const handleTicketSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,95 +72,55 @@ const Helpdesk = () => {
         </div>
 
         <TabsContent value="requests" className="space-y-4">
-          <div className="flex flex-col-reverse lg:flex-row gap-4">
-            <Card className="w-full lg:w-2/3">
-              <CardHeader>
-                <CardTitle>Jellyseerr Requests</CardTitle>
-                <CardDescription>Track your movie and TV show requests</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>ID</TableHead>
-                      <TableHead>Title</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Date</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredRequests.length > 0 ? (
-                      filteredRequests.map((request) => (
-                        <TableRow key={request.id}>
-                          <TableCell>{request.id}</TableCell>
-                          <TableCell>{request.title}</TableCell>
-                          <TableCell>{request.type}</TableCell>
-                          <TableCell>
-                            <Badge variant={
-                              request.status === "Approved" ? "default" : 
-                              request.status === "Pending" ? "secondary" : 
-                              "outline"
-                            }>
-                              {request.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>{request.date}</TableCell>
-                        </TableRow>
-                      ))
-                    ) : (
-                      <TableRow>
-                        <TableCell colSpan={5} className="text-center py-4">No requests found</TableCell>
+          <Card>
+            <CardHeader>
+              <CardTitle>Jellyseerr Requests</CardTitle>
+              <CardDescription className="flex justify-between items-center">
+                <span>Track your movie and TV show requests</span>
+                <Button variant="outline" size="sm" onClick={() => window.open('https://jellyseerr.example.com', '_blank')}>
+                  Go to Jellyseerr to make requests
+                </Button>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>ID</TableHead>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Date</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredRequests.length > 0 ? (
+                    filteredRequests.map((request) => (
+                      <TableRow key={request.id}>
+                        <TableCell>{request.id}</TableCell>
+                        <TableCell>{request.title}</TableCell>
+                        <TableCell>{request.type}</TableCell>
+                        <TableCell>
+                          <Badge variant={
+                            request.status === "Approved" ? "default" : 
+                            request.status === "Pending" ? "secondary" : 
+                            "outline"
+                          }>
+                            {request.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{request.date}</TableCell>
                       </TableRow>
-                    )}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-
-            <Card className="w-full lg:w-1/3">
-              <CardHeader>
-                <CardTitle>New Request</CardTitle>
-                <CardDescription>Submit a new movie or TV show request</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form onSubmit={handleRequestSubmit} className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input 
-                      id="title" 
-                      placeholder="Enter movie or show title" 
-                      value={newRequest.title}
-                      onChange={(e) => setNewRequest({...newRequest, title: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="type">Type</Label>
-                    <select 
-                      id="type"
-                      className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                      value={newRequest.type}
-                      onChange={(e) => setNewRequest({...newRequest, type: e.target.value})}
-                    >
-                      <option>Movie</option>
-                      <option>TV Show</option>
-                    </select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="description">Additional Notes</Label>
-                    <Textarea 
-                      id="description" 
-                      placeholder="Any specific details about your request" 
-                      value={newRequest.description}
-                      onChange={(e) => setNewRequest({...newRequest, description: e.target.value})}
-                    />
-                  </div>
-                  <Button type="submit" className="w-full">Submit Request</Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center py-4">No requests found</TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="tickets" className="space-y-4">
