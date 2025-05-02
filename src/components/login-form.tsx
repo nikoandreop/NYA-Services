@@ -22,7 +22,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
     setTimeout(() => {
       setIsLoading(false);
       onLogin(username, password);
-    }, 1000);
+    }, 500);
   };
 
   return (
@@ -39,7 +39,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             <Label htmlFor="username">Username</Label>
             <Input
               id="username"
-              placeholder="Enter your username"
+              placeholder="Enter your username (try 'demo')"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -51,7 +51,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             <Input
               id="password"
               type="password"
-              placeholder="Enter your password"
+              placeholder="Enter your password (try 'password')"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -68,7 +68,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         </form>
       </CardContent>
       <CardFooter className="flex justify-center text-sm text-gray-400">
-        Local authentication secured by Authelia
+        Local authentication secured by Authentik
       </CardFooter>
     </Card>
   );

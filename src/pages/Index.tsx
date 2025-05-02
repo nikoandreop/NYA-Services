@@ -2,16 +2,29 @@
 import React, { useState } from 'react';
 import LoginForm from '@/components/login-form';
 import Dashboard from '@/components/dashboard';
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState('');
+  const { toast } = useToast();
 
   const handleLogin = (username: string, password: string) => {
-    // In a real app, you would validate with Authelia or another auth provider
-    // This is just a simulation for the demo
-    setUserName(username);
-    setIsLoggedIn(true);
+    // Simple test account until Authentik integration
+    if (username === 'demo' && password === 'password') {
+      setUserName(username);
+      setIsLoggedIn(true);
+      toast({
+        title: "Login successful",
+        description: "Welcome to NYA Services",
+      });
+    } else {
+      toast({
+        title: "Login failed",
+        description: "Invalid username or password. Try demo/password",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
