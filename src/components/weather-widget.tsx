@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Cloud, CloudSun, Loader2 } from 'lucide-react';
+import { CloudSun, Loader2 } from 'lucide-react';
 
 interface WeatherData {
   temp: number;
@@ -29,22 +29,21 @@ const WeatherWidget: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="glass-card rounded-xl p-4 h-full flex items-center justify-center animate-fade-in">
-        <Loader2 className="animate-spin text-gray-400" />
+      <div className="flex items-center">
+        <Loader2 className="animate-spin text-gray-400 mr-2" size={16} />
+        <span>Loading weather...</span>
       </div>
     );
   }
 
   return (
-    <div className="glass-card rounded-xl p-4 flex items-center justify-center animate-fade-in">
-      <div className="flex items-center gap-3">
-        <CloudSun size={28} className="text-nya-400" />
-        <div>
-          <div className="text-lg md:text-xl font-semibold">{weather?.temp}° F</div>
-          <div className="text-xs text-gray-400 flex items-center gap-1">
-            <span>{weather?.condition}</span> • <span>{weather?.location}</span>
-          </div>
-        </div>
+    <div className="flex items-center gap-2">
+      <CloudSun size={16} className="text-nya-400" />
+      <div className="text-sm">
+        <span className="font-medium">{weather?.temp}° F</span>
+        <span className="text-gray-400 ml-2">
+          {weather?.condition} • {weather?.location}
+        </span>
       </div>
     </div>
   );

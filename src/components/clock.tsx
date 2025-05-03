@@ -15,18 +15,16 @@ const Clock: React.FC = () => {
   }, []);
 
   return (
-    <div className="text-center glass-card rounded-xl p-4 flex items-center justify-center animate-fade-in">
-      <div>
-        <div className="text-2xl md:text-3xl font-bold">
-          {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </div>
-        <div className="text-xs md:text-sm text-gray-400 mt-1">
+    <div className="text-center flex items-center">
+      <div className="text-lg font-medium">
+        {time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        <span className="text-xs text-gray-400 ml-2">
           {time.toLocaleDateString([], { 
-            weekday: 'long', 
-            month: 'long', 
+            weekday: 'short', 
+            month: 'short', 
             day: 'numeric' 
           })}
-        </div>
+        </span>
       </div>
     </div>
   );
