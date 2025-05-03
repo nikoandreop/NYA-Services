@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { CloudSun, Loader2 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface WeatherData {
   temp: number;
@@ -11,6 +12,7 @@ interface WeatherData {
 const WeatherWidget: React.FC = () => {
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   // In a real app, this would fetch from a weather API
   useEffect(() => {
@@ -31,19 +33,21 @@ const WeatherWidget: React.FC = () => {
     return (
       <div className="flex items-center">
         <Loader2 className="animate-spin text-gray-400 mr-2" size={16} />
-        <span>Loading weather...</span>
+        <span>Loading...</span>
       </div>
     );
   }
 
   return (
     <div className="flex items-center gap-2">
-      <CloudSun size={16} className="text-nya-400" />
-      <div className="text-sm">
+      <CloudSun size={isMobile ? 14 : 16} className="text-nya-400" />
+      <div className={`${isMobile ? 'text-xs' : 'text-sm'}`}>
         <span className="font-medium">{weather?.temp}° F</span>
-        <span className="text-gray-400 ml-2">
-          {weather?.condition} • {weather?.location}
-        </span>
+        {!isMobile && (
+          <span className="text-gray-400 ml-2">
+            {weather?.condition} • {weather?.location}
+          </span>
+        )}
       </div>
     </div>
   );

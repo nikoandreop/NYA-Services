@@ -11,6 +11,7 @@ import Helpdesk from './helpdesk';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Button } from "./ui/button";
 import { LogOut, UserCog } from "lucide-react";
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface DashboardProps {
   userName: string;
@@ -19,6 +20,7 @@ interface DashboardProps {
 
 const Dashboard: React.FC<DashboardProps> = ({ userName, onLogout }) => {
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   const handleLogout = () => {
     if (onLogout) {
@@ -53,7 +55,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onLogout }) => {
                   className="flex items-center gap-2"
                 >
                   <UserCog className="h-4 w-4" />
-                  Admin Panel
+                  {!isMobile && "Admin Panel"}
                 </Button>
               )}
               <Button 
@@ -62,7 +64,7 @@ const Dashboard: React.FC<DashboardProps> = ({ userName, onLogout }) => {
                 className="flex items-center gap-2"
               >
                 <LogOut className="h-4 w-4" />
-                Logout
+                {!isMobile && "Logout"}
               </Button>
             </div>
           </div>
