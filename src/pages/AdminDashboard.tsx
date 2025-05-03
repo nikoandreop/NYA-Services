@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,10 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Link as LinkIcon, LogOut, Shield, Ticket, Users, Edit, Contact } from "lucide-react";
+import { Link as LinkIcon, LogOut, Shield, Ticket, Users, Edit, Contact, Database, Server } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import ServiceManager from "@/components/admin/service-manager";
 
 // Mock data for admin systems
 const adminSystems = [
@@ -204,7 +206,14 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <header className="mb-8 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          <div className="flex items-center gap-3">
+            <img 
+              src="/lovable-uploads/387f4f7a-9636-4bb7-9369-45965d77c4f7.png" 
+              alt="NYA Services Logo" 
+              className="h-8"
+            />
+            <h1 className="text-2xl font-bold">Admin Dashboard</h1>
+          </div>
           <p className="text-gray-400">Manage services, users, and support tickets</p>
         </div>
         <div className="flex gap-2">
@@ -260,9 +269,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           </CardContent>
         </Card>
 
-        {/* User Management and Support Tickets Tabs */}
-        <Tabs defaultValue="users" className="w-full">
-          <TabsList className="grid grid-cols-2 w-full md:w-[400px] mb-4">
+        {/* Service Manager, User Management and Support Tickets Tabs */}
+        <Tabs defaultValue="services" className="w-full">
+          <TabsList className="grid grid-cols-3 w-full md:w-[600px] mb-4">
+            <TabsTrigger value="services" className="flex items-center gap-2">
+              <Server className="h-4 w-4" /> Services
+            </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" /> User Management
             </TabsTrigger>
@@ -270,6 +282,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               <Ticket className="h-4 w-4" /> Support Tickets
             </TabsTrigger>
           </TabsList>
+
+          {/* Service Management Tab */}
+          <TabsContent value="services">
+            <ServiceManager />
+          </TabsContent>
 
           {/* User Management Tab */}
           <TabsContent value="users">
