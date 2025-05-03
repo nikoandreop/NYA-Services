@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   Card,
@@ -233,7 +234,7 @@ const ServiceManager: React.FC = () => {
                     <Badge variant={
                       service.status === "up" ? "default" : 
                       service.status === "down" ? "destructive" : 
-                      service.status === "degraded" ? "warning" : 
+                      service.status === "degraded" ? "secondary" : 
                       "outline"
                     }>
                       {service.status.charAt(0).toUpperCase() + service.status.slice(1)}
