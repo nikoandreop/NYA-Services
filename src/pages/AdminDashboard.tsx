@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,11 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Link as LinkIcon, LogOut, Shield, Ticket, Users, Edit, Contact, Database, Server } from "lucide-react";
+import { Link as LinkIcon, LogOut, Shield, Ticket, Users, Edit, Contact, Database, Server, Link } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import ServiceManager from "@/components/admin/service-manager";
+import ServiceIntegrations from '@/components/admin/service-integrations';
 
 // Mock data for admin systems
 const adminSystems = [
@@ -271,21 +271,29 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
         {/* Service Manager, User Management and Support Tickets Tabs */}
         <Tabs defaultValue="services" className="w-full">
-          <TabsList className="grid grid-cols-3 w-full md:w-[600px] mb-4">
+          <TabsList className="grid grid-cols-4 w-full md:w-[600px] mb-4">
             <TabsTrigger value="services" className="flex items-center gap-2">
               <Server className="h-4 w-4" /> Services
             </TabsTrigger>
+            <TabsTrigger value="integrations" className="flex items-center gap-2">
+              <Link className="h-4 w-4" /> Integrations
+            </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="h-4 w-4" /> User Management
+              <Users className="h-4 w-4" /> Users
             </TabsTrigger>
             <TabsTrigger value="tickets" className="flex items-center gap-2">
-              <Ticket className="h-4 w-4" /> Support Tickets
+              <Ticket className="h-4 w-4" /> Tickets
             </TabsTrigger>
           </TabsList>
 
           {/* Service Management Tab */}
           <TabsContent value="services">
             <ServiceManager />
+          </TabsContent>
+
+          {/* Integrations Tab */}
+          <TabsContent value="integrations">
+            <ServiceIntegrations />
           </TabsContent>
 
           {/* User Management Tab */}

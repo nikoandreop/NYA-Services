@@ -4,6 +4,8 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
+import { AlertTriangle } from 'lucide-react';
+import { Alert, AlertDescription } from './ui/alert';
 
 interface LoginFormProps {
   onLogin: (username: string, password: string) => void;
@@ -13,10 +15,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError(null);
     
     // Simulate login process
     setTimeout(() => {
@@ -35,11 +39,17 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-2">
             <Label htmlFor="username">Username</Label>
             <Input
               id="username"
-              placeholder="Enter your username (try 'demo')"
+              placeholder="Enter your username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -51,7 +61,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
             <Input
               id="password"
               type="password"
-              placeholder="Enter your password (try 'password')"
+              placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required

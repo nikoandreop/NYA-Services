@@ -10,6 +10,9 @@ export interface Service {
   status: 'up' | 'down' | 'degraded' | 'unknown';
   uptimePercentage: number;
   isActive?: boolean;
+  // New fields for Uptime Kuma integration
+  monitorId?: string | number;
+  isMonitored?: boolean;
 }
 
 interface ServiceManagerContextType {
@@ -21,6 +24,7 @@ interface ServiceManagerContextType {
   deleteService: (id: string | number) => void;
   toggleService: (id: string | number) => void;
   refreshServiceStatus: (id?: string | number) => Promise<void>;
+  syncWithUptimeKuma: () => Promise<boolean>;
 }
 
 // Default services as a fallback
@@ -134,6 +138,19 @@ export const ServiceManagerProvider: React.FC<ServiceManagerProviderProps> = ({ 
     }
   }, [allServices]);
 
+  // Check if auto-sync is enabled and uptime kuma URL is set
+  useEffect(() => {
+    const autoSync = localStorage.getItem('nya_auto_kuma_sync') === 'true';
+    if (autoSync) {
+      // Auto-sync every 5 minutes
+      const interval = setInterval(() => {
+        syncWithUptimeKuma().catch(console.error);
+      }, 5 * 60 * 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, []);
+
   // Get only active services for display in the main dashboard
   const services = allServices.filter(service => service.isActive !== false);
 
@@ -143,7 +160,8 @@ export const ServiceManagerProvider: React.FC<ServiceManagerProviderProps> = ({ 
       id: Date.now(), // Use timestamp as a simple unique ID
       status: 'unknown',
       uptimePercentage: 0,
-      isActive: true
+      isActive: true,
+      isMonitored: false
     };
     
     setAllServices(prev => [...prev, newService]);
@@ -169,8 +187,81 @@ export const ServiceManagerProvider: React.FC<ServiceManagerProviderProps> = ({ 
     );
   };
 
+  // Function to sync with Uptime Kuma
+  const syncWithUptimeKuma = async (): Promise<boolean> => {
+    const uptimeKumaUrl = localStorage.getItem('nya_uptime_kuma_url');
+    const uptimeKumaKey = localStorage.getItem('nya_uptime_kuma_key');
+    
+    if (!uptimeKumaUrl || !uptimeKumaKey) {
+      console.log("Uptime Kuma integration not configured");
+      return false;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // In a real implementation, this would make an API call to Uptime Kuma
+      // For now, we'll simulate it with random statuses
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // This is where you would fetch real status data from Uptime Kuma
+      // const response = await fetch(`${uptimeKumaUrl}/api/v1/monitors`, {
+      //   headers: { Authorization: `Bearer ${uptimeKumaKey}` }
+      // });
+      // const monitors = await response.json();
+      
+      // For now, we'll update services with "monitored" flag to simulate integration
+      setAllServices(prev => 
+        prev.map(service => {
+          if (service.isMonitored) {
+            // This is where you would match service URLs with monitor URLs
+            // For now, random statuses again
+            const statusOptions = ['up', 'degraded', 'down'] as const;
+            const randomIndex = Math.floor(Math.random() * 10);
+            // 70% chance of up, 20% chance of degraded, 10% chance of down
+            const newStatus = randomIndex < 7 ? 'up' : randomIndex < 9 ? 'degraded' : 'down';
+            
+            // Calculate a realistic uptime percentage
+            let uptimePercentage = service.uptimePercentage;
+            if (newStatus === 'up') {
+              // Slight improvement if service is up
+              uptimePercentage = Math.min(100, uptimePercentage + (Math.random() * 0.5));
+            } else if (newStatus === 'degraded') {
+              // Slight decrease if service is degraded
+              uptimePercentage = Math.max(85, uptimePercentage - (Math.random() * 1));
+            } else {
+              // Larger decrease if service is down
+              uptimePercentage = Math.max(70, uptimePercentage - (Math.random() * 5));
+            }
+            
+            return {
+              ...service,
+              status: newStatus,
+              uptimePercentage: parseFloat(uptimePercentage.toFixed(1))
+            };
+          }
+          return service;
+        })
+      );
+      
+      setIsLoading(false);
+      return true;
+    } catch (error) {
+      console.error("Error syncing with Uptime Kuma:", error);
+      setIsLoading(false);
+      return false;
+    }
+  };
+
   // Simulate checking status of services
   const refreshServiceStatus = async (id?: string | number) => {
+    // Try to use Uptime Kuma if configured
+    if (localStorage.getItem('nya_uptime_kuma_url') && localStorage.getItem('nya_uptime_kuma_key')) {
+      const success = await syncWithUptimeKuma();
+      if (success) return; // If successful, don't do the random status generation
+    }
+    
+    // Fallback to random status generation
     setIsLoading(true);
     
     // Simulate API delay
@@ -219,7 +310,8 @@ export const ServiceManagerProvider: React.FC<ServiceManagerProviderProps> = ({ 
     updateService,
     deleteService,
     toggleService,
-    refreshServiceStatus
+    refreshServiceStatus,
+    syncWithUptimeKuma
   };
 
   return (

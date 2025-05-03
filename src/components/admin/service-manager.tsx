@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Card,
@@ -17,7 +16,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Trash, Save, RefreshCw, Link, Database, Server, Image } from "lucide-react";
+import { Loader2, Plus, Trash, Save, RefreshCw, Link, Database, Server, Image, Monitor } from "lucide-react";
 import { useServiceManager, Service } from '@/contexts/service-manager-context';
 
 const ServiceManager: React.FC = () => {
@@ -365,6 +364,32 @@ const ServiceManager: React.FC = () => {
                 </div>
               </div>
             </div>
+            
+            {/* New: Uptime Kuma Integration Options */}
+            {localStorage.getItem('nya_uptime_kuma_url') && (
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="service-monitored" className="text-right">Uptime Kuma</Label>
+                <div className="col-span-3 flex items-center gap-2">
+                  <Switch
+                    id="service-monitored"
+                    checked={editingService?.isMonitored || false}
+                    onCheckedChange={(checked) => setEditingService({
+                      ...editingService,
+                      isMonitored: checked
+                    })}
+                  />
+                  <Label htmlFor="service-monitored" className="cursor-pointer">
+                    Monitor with Uptime Kuma
+                  </Label>
+                  <div className="ml-2">
+                    <Badge variant="outline" className="flex items-center gap-1">
+                      <Monitor className="h-3 w-3" />
+                      Status Integration
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
           
           <DialogFooter>
