@@ -8,8 +8,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, MessageCircle, TicketCheck } from "lucide-react";
+import { Search, MessageCircle, TicketCheck, Edit, Bell } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 
 // Mock data for requests and tickets for demonstration
 const mockRequests = [
@@ -18,15 +19,50 @@ const mockRequests = [
   { id: "REQ-003", title: "Dune: Part Two", type: "Movie", status: "In Progress", date: "2025-04-30" },
 ];
 
+// Extended ticket model with more details
 const mockTickets = [
-  { id: "TKT-001", subject: "Jellyfin Buffering Issue", status: "Open", priority: "High", date: "2025-05-01" },
-  { id: "TKT-002", subject: "Radio Station Access", status: "Closed", priority: "Medium", date: "2025-04-25" },
-  { id: "TKT-003", subject: "Password Reset Request", status: "In Progress", priority: "Low", date: "2025-04-30" },
+  { 
+    id: "TKT-001", 
+    subject: "Jellyfin Buffering Issue", 
+    status: "Open", 
+    priority: "High", 
+    date: "2025-05-01",
+    description: "I'm experiencing constant buffering when watching 4K content on Jellyfin.",
+    messages: [
+      { sender: "user", text: "The buffering happens every 10-15 seconds.", timestamp: "2025-05-01 10:30" }
+    ]
+  },
+  { 
+    id: "TKT-002", 
+    subject: "Radio Station Access", 
+    status: "Closed", 
+    priority: "Medium", 
+    date: "2025-04-25",
+    description: "I can't access the new Lo-Fi radio station that was recently added.",
+    messages: [
+      { sender: "user", text: "The station doesn't appear in my list.", timestamp: "2025-04-25 14:22" },
+      { sender: "admin", text: "You need to refresh your browser cache. Please try clearing your cookies and cache.", timestamp: "2025-04-25 15:45" }
+    ]
+  },
+  { 
+    id: "TKT-003", 
+    subject: "Password Reset Request", 
+    status: "In Progress", 
+    priority: "Low", 
+    date: "2025-04-30",
+    description: "I forgot my password for the Nextcloud service.",
+    messages: [
+      { sender: "user", text: "I've tried the 'forgot password' link but didn't receive any email.", timestamp: "2025-04-30 09:15" },
+      { sender: "admin", text: "I'll reset it manually for you. What would you like your new password to be?", timestamp: "2025-04-30 10:20" }
+    ]
+  },
 ];
 
 const Helpdesk = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [newTicket, setNewTicket] = useState({ subject: "", description: "", priority: "Medium" });
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [replyText, setReplyText] = useState("");
   const { toast } = useToast();
   
   const filteredRequests = mockRequests.filter(req => 
@@ -48,15 +84,41 @@ const Helpdesk = () => {
     setNewTicket({ subject: "", description: "", priority: "Medium" });
   };
 
+  const handleTicketReply = () => {
+    if (!replyText.trim() || !selectedTicket) return;
+    
+    toast({
+      title: "Reply Sent",
+      description: `Your reply to ticket ${selectedTicket.id} has been sent.`,
+    });
+    
+    // In a real app, this would update the backend
+    setReplyText("");
+    // Adding the reply to the selected ticket's messages
+    selectedTicket.messages.push({
+      sender: "user",
+      text: replyText,
+      timestamp: new Date().toLocaleString()
+    });
+  };
+
+  const handleStatusChange = (ticketId: string, newStatus: string) => {
+    toast({
+      title: "Ticket Updated",
+      description: `Ticket ${ticketId} has been updated to ${newStatus}.`,
+    });
+    // In a real app, this would update the backend
+  };
+
   return (
     <div className="w-full">
-      <Tabs defaultValue="requests" className="w-full">
+      <Tabs defaultValue="tickets" className="w-full">
         <TabsList className="grid grid-cols-2 mb-4">
-          <TabsTrigger value="requests" className="flex items-center gap-2">
-            <TicketCheck className="h-4 w-4" /> Jellyseerr Requests
-          </TabsTrigger>
           <TabsTrigger value="tickets" className="flex items-center gap-2">
             <MessageCircle className="h-4 w-4" /> Support Tickets
+          </TabsTrigger>
+          <TabsTrigger value="requests" className="flex items-center gap-2">
+            <TicketCheck className="h-4 w-4" /> Jellyseerr Requests
           </TabsTrigger>
         </TabsList>
         
@@ -128,7 +190,7 @@ const Helpdesk = () => {
             <Card className="w-full lg:w-2/3">
               <CardHeader>
                 <CardTitle>Support Tickets</CardTitle>
-                <CardDescription>Track your support tickets</CardDescription>
+                <CardDescription>Track and manage your support tickets</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -139,6 +201,7 @@ const Helpdesk = () => {
                       <TableHead>Status</TableHead>
                       <TableHead>Priority</TableHead>
                       <TableHead>Date</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -166,11 +229,114 @@ const Helpdesk = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>{ticket.date}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center space-x-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    onClick={() => setSelectedTicket(ticket)}
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="flex items-center gap-1"
+                                  >
+                                    <MessageCircle className="h-3 w-3" />
+                                    View
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-3xl">
+                                  <DialogHeader>
+                                    <DialogTitle className="flex items-center justify-between">
+                                      <span>{selectedTicket?.subject}</span>
+                                      <Badge variant={
+                                        selectedTicket?.status === "Open" ? "default" : 
+                                        selectedTicket?.status === "Closed" ? "secondary" : 
+                                        "outline"
+                                      }>
+                                        {selectedTicket?.status}
+                                      </Badge>
+                                    </DialogTitle>
+                                    <DialogDescription className="flex justify-between">
+                                      <span>Ticket ID: {selectedTicket?.id}</span>
+                                      <span>Priority: {selectedTicket?.priority}</span>
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="space-y-4 my-6">
+                                    <div className="bg-muted p-4 rounded-md">
+                                      <h4 className="font-medium mb-2">Description</h4>
+                                      <p>{selectedTicket?.description}</p>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-medium mb-2">Conversation</h4>
+                                      <div className="space-y-2 max-h-60 overflow-y-auto">
+                                        {selectedTicket?.messages.map((msg: any, idx: number) => (
+                                          <div 
+                                            key={idx} 
+                                            className={`p-3 rounded-lg ${
+                                              msg.sender === 'user' ? 'bg-secondary/20 ml-8' : 'bg-primary/10 mr-8'
+                                            }`}
+                                          >
+                                            <div className="flex justify-between text-xs text-muted-foreground mb-1">
+                                              <span>{msg.sender === 'user' ? 'You' : 'Support'}</span>
+                                              <span>{msg.timestamp}</span>
+                                            </div>
+                                            <p>{msg.text}</p>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    {selectedTicket?.status !== "Closed" && (
+                                      <div className="space-y-2">
+                                        <div className="flex items-center justify-between">
+                                          <Label htmlFor="reply">Reply</Label>
+                                          <div className="flex gap-2">
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm"
+                                              onClick={() => handleStatusChange(selectedTicket?.id, "In Progress")}
+                                              disabled={selectedTicket?.status === "In Progress"}
+                                            >
+                                              Mark In Progress
+                                            </Button>
+                                            <Button 
+                                              variant="outline" 
+                                              size="sm"
+                                              onClick={() => handleStatusChange(selectedTicket?.id, "Closed")}
+                                            >
+                                              Close Ticket
+                                            </Button>
+                                          </div>
+                                        </div>
+                                        <Textarea 
+                                          id="reply" 
+                                          placeholder="Type your reply here..." 
+                                          value={replyText}
+                                          onChange={(e) => setReplyText(e.target.value)}
+                                        />
+                                        <Button onClick={handleTicketReply} className="w-full">
+                                          Send Reply
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                              
+                              <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="flex items-center gap-1"
+                                onClick={() => handleStatusChange(ticket.id, ticket.status === "Open" ? "In Progress" : "Open")}
+                              >
+                                <Edit className="h-3 w-3" />
+                                Update
+                              </Button>
+                            </div>
+                          </TableCell>
                         </TableRow>
                       ))
                     ) : (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-4">No tickets found</TableCell>
+                        <TableCell colSpan={6} className="text-center py-4">No tickets found</TableCell>
                       </TableRow>
                     )}
                   </TableBody>
