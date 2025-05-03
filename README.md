@@ -1,33 +1,81 @@
 
-**Use your preferred IDE**
+# NYA Services Dashboard
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+A self-hosted dashboard for managing and monitoring your self-hosted services.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Features
 
-Follow these steps:
+- Service status monitoring
+- User management
+- Support ticket system
+- Integration with Uptime Kuma
+- Local authentication
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## Installation
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+### Option 1: Manual Installation
 
-# Step 3: Install the necessary dependencies.
-npm i
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/yourusername/nya-services.git
+   cd nya-services
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+2. Run the installation script:
+   ```bash
+   node install.js
+   ```
+
+3. Build the frontend:
+   ```bash
+   npm run build
+   ```
+
+4. Start the server:
+   ```bash
+   node server.js
+   ```
+
+5. Access the dashboard at http://localhost:3001
+
+### Option 2: Docker Installation
+
+1. Clone this repository:
+   ```bash
+   git clone https://github.com/yourusername/nya-services.git
+   cd nya-services
+   ```
+
+2. Start with Docker Compose:
+   ```bash
+   docker-compose up -d
+   ```
+
+3. Access the dashboard at http://localhost:3001
+
+## Configuration
+
+The dashboard stores all data in the `data` directory:
+
+- `services.json`: Service configurations
+- `users.json`: User accounts
+- `tickets.json`: Support tickets
+- `integrations.json`: Integration configurations
+
+## Environment Variables
+
+Create a `.env` file in the project root:
+
+```
+VITE_API_URL=http://localhost:3001/api
+PORT=3001
 ```
 
+## Default Login
 
-## What technologies are used for this project?
+Username: admin  
+Password: nyaservices2025
 
-This project is built with:
+## License
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+MIT
