@@ -8,4 +8,16 @@ services:
       - "3001:3001"
     volumes:
       - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
     restart: unless-stopped
+    networks:
+      - nya-network
+      - proxy-network  # For reverse proxy integration
+
+networks:
+  nya-network:
+    driver: bridge
+  proxy-network:
+    external: true  # Connect to existing network for your reverse proxy
