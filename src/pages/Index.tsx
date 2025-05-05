@@ -38,6 +38,20 @@ const Index = () => {
 
   const handleLogin = async (username: string, password: string) => {
     try {
+      // Handle special OAuth setup login
+      if (username === 'oauthsetup' && password === 'setup2025') {
+        // OAuth setup login is handled in the login form component
+        setUserName('admin');
+        setUserRole('admin');
+        setIsLoggedIn(true);
+        
+        // Redirect to admin page after a short delay to allow toast to be seen
+        setTimeout(() => {
+          navigate('/admin');
+        }, 1000);
+        return;
+      }
+      
       // Explicitly check for preview environment
       if (isPreview && username === 'admin' && password === 'nyaservices2025') {
         console.log("Using direct login for preview environment");

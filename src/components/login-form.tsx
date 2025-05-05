@@ -4,7 +4,7 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { AlertTriangle, Shield } from 'lucide-react';
+import { AlertTriangle, Shield, Key } from 'lucide-react';
 import { Alert, AlertDescription } from './ui/alert';
 import { useToast } from "@/hooks/use-toast";
 import { Separator } from './ui/separator';
@@ -39,7 +39,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
     setError(null);
     
     try {
-      // Let the parent component handle all login logic
+      // Special case for the admin OAuth setup account
+      if (username === 'oauthsetup' && password === 'setup2025') {
+        localStorage.setItem('nya_auth_token', 'oauth-setup-token');
+        localStorage.setItem('nya_session_user', 'admin');
+        localStorage.setItem('nya_session_role', 'admin');
+        
+        toast({
+          title: "OAuth Setup Login",
+          description: "Welcome to OAuth configuration mode. You can now set up Authentik integration.",
+        });
+        
+        onLogin(username, password);
+        setIsLoading(false);
+        return;
+      }
+      
+      // Regular login flow
       onLogin(username, password);
       setIsLoading(false);
     } catch (error) {
@@ -98,6 +114,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
               required
               className="bg-white/5"
             />
+            <p className="text-xs text-muted-foreground">For OAuth setup use: oauthsetup</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -110,6 +127,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
               required
               className="bg-white/5"
             />
+            <p className="text-xs text-muted-foreground">For OAuth setup use: setup2025</p>
           </div>
           <Button 
             type="submit" 
@@ -141,8 +159,16 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           )}
         </form>
       </CardContent>
-      <CardFooter className="flex justify-center text-sm text-gray-400">
-        {useOAuth ? 'Authentication powered by Authentik' : 'Local authentication secured by Authentik'}
+      <CardFooter className="flex flex-col items-center space-y-2">
+        <p className="text-sm text-gray-400">
+          {useOAuth ? 'Authentication powered by Authentik' : 'Local authentication secured by Authentik'}
+        </p>
+        <Alert className="p-2 mt-2 bg-amber-950/20 border-amber-800/50">
+          <Key className="h-4 w-4 text-amber-500" />
+          <AlertDescription className="text-xs text-amber-200/70">
+            Use the OAuth setup account to configure Authentik integration
+          </AlertDescription>
+        </Alert>
       </CardFooter>
     </Card>
   );
