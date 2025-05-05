@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -27,7 +26,7 @@ const ModuleManager = () => {
     {
       id: 'headscale',
       name: 'Headscale',
-      description: 'Manage Headscale VPN access and devices',
+      description: 'Manage Headscale VPN access and user accounts with Authentik integration',
       enabled: false,
       icon: <Network className="h-5 w-5" />,
     },
