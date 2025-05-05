@@ -1,14 +1,14 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LogOut, UserCog, Shield, Ticket, Users, Database, Server, Link as LinkIcon, Contact, Edit, Megaphone, Tags } from "lucide-react";
+import { LogOut, UserCog, Shield, Ticket, Users, Database, Server, Link as LinkIcon, Contact, Edit, Megaphone, Tags, Network } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/components/admin/service-manager";
 import ServiceIntegrations from '@/components/admin/service-integrations';
 import ModuleManager from '@/components/admin/module-manager';
 import AnnouncementManager from '@/components/admin/announcement-manager';
+import HeadscaleManager from '@/components/admin/headscale-manager';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -120,6 +120,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
   const [editedUser, setEditedUser] = useState<any>(null);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
   const [replyText, setReplyText] = useState("");
+  const [activeModules, setActiveModules] = useState<string[]>(() => {
+    // Initialize based on localStorage or default to certain modules
+    const savedModules = localStorage.getItem('nya_active_modules');
+    return savedModules ? JSON.parse(savedModules) : ['support_tickets', 'services', 'uptime_kuma', 'admin_tools'];
+  });
 
   const filteredUsers = mockUsers.filter(user => 
     user.username.toLowerCase().includes(searchUserQuery.toLowerCase()) || 
@@ -205,6 +210,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
     });
   };
 
+  // Check if a specific module is active
+  const isModuleActive = (moduleId: string) => {
+    return activeModules.includes(moduleId);
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <header className="mb-8 flex justify-between items-center">
@@ -276,7 +286,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="services" className="w-full">
-          <TabsList className="grid grid-cols-7 w-full md:w-[950px] mb-4">
+          <TabsList className="grid grid-cols-8 w-full md:w-[1080px] mb-4">
             <TabsTrigger value="services" className="flex items-center gap-2">
               <Server className="h-4 w-4" /> Services
             </TabsTrigger>
@@ -285,6 +295,9 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             </TabsTrigger>
             <TabsTrigger value="modules" className="flex items-center gap-2">
               <Shield className="h-4 w-4" /> Modules
+            </TabsTrigger>
+            <TabsTrigger value="headscale" className="flex items-center gap-2">
+              <Network className="h-4 w-4" /> Headscale
             </TabsTrigger>
             <TabsTrigger value="announcements" className="flex items-center gap-2">
               <Megaphone className="h-4 w-4" /> Announcements
@@ -315,12 +328,42 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             <ModuleManager />
           </TabsContent>
           
+          {/* Headscale Tab */}
+          <TabsContent value="headscale">
+            {isModuleActive('headscale') ? (
+              <HeadscaleManager />
+            ) : (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Headscale Module Disabled</CardTitle>
+                  <CardDescription>
+                    The Headscale module is currently disabled. Enable it in the Modules tab to access Headscale management.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button onClick={() => {
+                    const updatedModules = [...activeModules, 'headscale'];
+                    setActiveModules(updatedModules);
+                    localStorage.setItem('nya_active_modules', JSON.stringify(updatedModules));
+                    
+                    toast({
+                      title: "Module Enabled",
+                      description: "The Headscale module has been enabled",
+                    });
+                  }}>
+                    Enable Headscale Module
+                  </Button>
+                </CardContent>
+              </Card>
+            )}
+          </TabsContent>
+          
           {/* Announcements Tab */}
           <TabsContent value="announcements">
             <AnnouncementManager />
           </TabsContent>
           
-          {/* Tags Tab - We're including this in the AnnouncementManager for better UX */}
+          {/* Tags Tab */}
           <TabsContent value="tags">
             <AnnouncementManager />
           </TabsContent>

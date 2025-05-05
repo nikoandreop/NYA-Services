@@ -63,6 +63,22 @@ const ModuleManager = () => {
 
   const [isSaving, setIsSaving] = useState(false);
 
+  // Load module states from localStorage on component mount
+  useEffect(() => {
+    const savedModules = localStorage.getItem('nya_active_modules');
+    
+    if (savedModules) {
+      const activeModuleIds = JSON.parse(savedModules) as string[];
+      
+      setModules(prevModules => 
+        prevModules.map(module => ({
+          ...module,
+          enabled: activeModuleIds.includes(module.id)
+        }))
+      );
+    }
+  }, []);
+
   const handleToggleModule = (id: string) => {
     setModules(modules.map(module => 
       module.id === id ? { ...module, enabled: !module.enabled } : module
@@ -73,8 +89,15 @@ const ModuleManager = () => {
     setIsSaving(true);
     
     try {
-      // In a real implementation, you would save this to your backend
-      // Currently, we'll just simulate a delay and success
+      // Get the IDs of enabled modules
+      const activeModuleIds = modules
+        .filter(module => module.enabled)
+        .map(module => module.id);
+      
+      // Save to localStorage for persistence
+      localStorage.setItem('nya_active_modules', JSON.stringify(activeModuleIds));
+      
+      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       toast({
