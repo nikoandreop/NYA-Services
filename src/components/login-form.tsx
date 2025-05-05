@@ -88,6 +88,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
     // window.location.href = `${authentikUrl}/application/o/authorize/?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid%20profile%20email`;
   };
 
+  // Check if OAuth is already configured
+  const isOAuthConfigured = useOAuth && authentikUrl;
+
   return (
     <Card className="w-full max-w-md glass-card animate-fade-in border-none shadow-xl">
       <CardHeader className="space-y-2">
@@ -114,7 +117,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
               required
               className="bg-white/5"
             />
-            <p className="text-xs text-muted-foreground">For OAuth setup use: oauthsetup</p>
+            {!isOAuthConfigured && (
+              <p className="text-xs text-muted-foreground">For OAuth setup use: oauthsetup</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="password">Password</Label>
@@ -127,7 +132,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
               required
               className="bg-white/5"
             />
-            <p className="text-xs text-muted-foreground">For OAuth setup use: setup2025</p>
+            {!isOAuthConfigured && (
+              <p className="text-xs text-muted-foreground">For OAuth setup use: setup2025</p>
+            )}
           </div>
           <Button 
             type="submit" 
@@ -163,12 +170,14 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
         <p className="text-sm text-gray-400">
           {useOAuth ? 'Authentication powered by Authentik' : 'Local authentication secured by Authentik'}
         </p>
-        <Alert className="p-2 mt-2 bg-amber-950/20 border-amber-800/50">
-          <Key className="h-4 w-4 text-amber-500" />
-          <AlertDescription className="text-xs text-amber-200/70">
-            Use the OAuth setup account to configure Authentik integration
-          </AlertDescription>
-        </Alert>
+        {!isOAuthConfigured && (
+          <Alert className="p-2 mt-2 bg-amber-950/20 border-amber-800/50">
+            <Key className="h-4 w-4 text-amber-500" />
+            <AlertDescription className="text-xs text-amber-200/70">
+              Use the OAuth setup account to configure Authentik integration
+            </AlertDescription>
+          </Alert>
+        )}
       </CardFooter>
     </Card>
   );
