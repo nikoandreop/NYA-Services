@@ -6,6 +6,7 @@ import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
 import { AlertTriangle } from 'lucide-react';
 import { Alert, AlertDescription } from './ui/alert';
+import { useToast } from "@/hooks/use-toast";
 
 interface LoginFormProps {
   onLogin: (username: string, password: string) => void;
@@ -16,17 +17,58 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
+    try {
+      // For preview/development environments, allow direct login with admin credentials
+      if (window.location.hostname.includes('lovable') && username === 'admin' && password === 'nyaservices2025') {
+        setTimeout(() => {
+          setIsLoading(false);
+          toast({
+            title: "Login successful",
+            description: "Welcome to the admin dashboard!",
+          });
+          onLogin(username, password);
+        }, 500);
+        return;
+      }
+
+      // For production environments, attempt API login
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Login failed');
+      }
+
+      const data = await response.json();
       onLogin(username, password);
-    }, 500);
+      toast({
+        title: "Login successful",
+        description: "Welcome back!",
+      });
+    } catch (error) {
+      console.error('Login error:', error);
+      setError('Invalid username or password');
+      toast({
+        title: "Login failed",
+        description: "Please check your credentials and try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

@@ -1,20 +1,12 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Link as LinkIcon, LogOut, Shield, Ticket, Users, Edit, Contact, Database, Server, Link } from "lucide-react";
+import { LogOut, UserCog, Shield, Ticket, Users, Database, Server, Link } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import ServiceManager from "@/components/admin/service-manager";
 import ServiceIntegrations from '@/components/admin/service-integrations';
+import ModuleManager from '@/components/admin/module-manager';
 
 // Mock data for admin systems
 const adminSystems = [
@@ -236,47 +228,52 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
       <div className="grid grid-cols-1 gap-6">
         {/* Admin Systems Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
-              Admin Systems
-            </CardTitle>
-            <CardDescription>Access administration panels for various services</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {adminSystems.map((system) => (
-                <Card key={system.name} className="bg-secondary/20">
-                  <CardHeader className="py-4">
-                    <CardTitle className="text-lg">{system.name}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="py-2">
-                    <p className="text-sm text-gray-400">{system.description}</p>
-                  </CardContent>
-                  <CardFooter className="pt-2 pb-4">
-                    <Button 
-                      variant="outline" 
-                      className="w-full" 
-                      onClick={() => window.open(system.url, '_blank')}
-                    >
-                      Access Panel
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Admin Systems
+              </CardTitle>
+              <CardDescription>Access administration panels for various services</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {adminSystems.map((system) => (
+                  <Card key={system.name} className="bg-secondary/20">
+                    <CardHeader className="py-4">
+                      <CardTitle className="text-lg">{system.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="py-2">
+                      <p className="text-sm text-gray-400">{system.description}</p>
+                    </CardContent>
+                    <CardFooter className="pt-2 pb-4">
+                      <Button 
+                        variant="outline" 
+                        className="w-full" 
+                        onClick={() => window.open(system.url, '_blank')}
+                      >
+                        Access Panel
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-        {/* Service Manager, User Management and Support Tickets Tabs */}
+        {/* Tabs for different sections */}
         <Tabs defaultValue="services" className="w-full">
-          <TabsList className="grid grid-cols-4 w-full md:w-[600px] mb-4">
+          <TabsList className="grid grid-cols-5 w-full md:w-[750px] mb-4">
             <TabsTrigger value="services" className="flex items-center gap-2">
               <Server className="h-4 w-4" /> Services
             </TabsTrigger>
             <TabsTrigger value="integrations" className="flex items-center gap-2">
               <Link className="h-4 w-4" /> Integrations
+            </TabsTrigger>
+            <TabsTrigger value="modules" className="flex items-center gap-2">
+              <Shield className="h-4 w-4" /> Modules
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" /> Users
@@ -294,6 +291,11 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           {/* Integrations Tab */}
           <TabsContent value="integrations">
             <ServiceIntegrations />
+          </TabsContent>
+          
+          {/* Modules Tab */}
+          <TabsContent value="modules">
+            <ModuleManager />
           </TabsContent>
 
           {/* User Management Tab */}

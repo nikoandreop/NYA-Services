@@ -1,7 +1,11 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ServiceCard from './service-card';
 import { useServiceManager } from '@/contexts/service-manager-context';
+import { Info } from 'lucide-react';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import ServiceInfoPopup from './service-info-popup';
 
 const ServicesGrid: React.FC = () => {
   const { services, refreshServiceStatus, isLoading } = useServiceManager();

@@ -1,7 +1,9 @@
 
 import React from 'react';
-import { ExternalLink } from 'lucide-react';
+import { ExternalLink, Info } from 'lucide-react';
 import ServiceInfoPopup from './service-info-popup';
+import { Button } from './ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface ServiceCardProps {
   name: string;
@@ -64,6 +66,27 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-lg truncate">{name}</h3>
             <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 rounded-full p-0 text-gray-400 hover:text-primary transition-colors"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                      }}
+                    >
+                      <Info size={14} />
+                      <span className="sr-only">Service Information</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>View service information</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               {info && <ServiceInfoPopup info={info} />}
               <a 
                 href={url} 
