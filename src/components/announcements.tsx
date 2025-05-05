@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Bell, Calendar, Megaphone } from "lucide-react";
+import { Bell, Calendar, Megaphone, Tag } from "lucide-react";
 
 // Mock announcements data
 const announcements = [
@@ -12,23 +12,36 @@ const announcements = [
     title: "Jellyfin Maintenance",
     date: "2025-05-03",
     type: "maintenance",
-    content: "Jellyfin will be undergoing maintenance on Saturday between 2-4 AM. Service may be intermittently unavailable during this time."
+    content: "Jellyfin will be undergoing maintenance on Saturday between 2-4 AM. Service may be intermittently unavailable during this time.",
+    tags: ["service", "maintenance"]
   },
   {
     id: 2,
     title: "New Radio Station Added",
     date: "2025-05-01",
     type: "update",
-    content: "A new Lo-Fi radio station has been added to the collection. Enjoy some relaxing beats while you work!"
+    content: "A new Lo-Fi radio station has been added to the collection. Enjoy some relaxing beats while you work!",
+    tags: ["media", "new"]
   },
   {
     id: 3,
     title: "Storage Upgrade Complete",
     date: "2025-04-29",
     type: "announcement",
-    content: "The storage upgrade has been completed successfully! We now have an additional 8TB of space for new movies and TV shows."
+    content: "The storage upgrade has been completed successfully! We now have an additional 8TB of space for new movies and TV shows.",
+    tags: ["storage", "upgrade"]
   }
 ];
+
+// Map to determine badge variants based on tag type
+const tagVariants: Record<string, string> = {
+  service: "default",
+  maintenance: "destructive",
+  media: "purple",
+  new: "success",
+  storage: "warning",
+  upgrade: "yellow"
+};
 
 const Announcements = () => {
   return (
@@ -69,6 +82,19 @@ const Announcements = () => {
               <AlertDescription className="text-sm">
                 {announcement.content}
               </AlertDescription>
+              {announcement.tags && announcement.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {announcement.tags.map((tag: string) => (
+                    <Badge 
+                      key={tag} 
+                      variant={tagVariants[tag] || "secondary"}
+                      className="text-xs flex items-center gap-1"
+                    >
+                      <Tag className="h-3 w-3" /> {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
             </div>
           </Alert>
         ))}

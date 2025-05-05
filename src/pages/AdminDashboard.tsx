@@ -1,12 +1,14 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LogOut, UserCog, Shield, Ticket, Users, Database, Server, Link as LinkIcon, Contact, Edit } from "lucide-react";
+import { LogOut, UserCog, Shield, Ticket, Users, Database, Server, Link as LinkIcon, Contact, Edit, Megaphone, Tags } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/components/admin/service-manager";
 import ServiceIntegrations from '@/components/admin/service-integrations';
 import ModuleManager from '@/components/admin/module-manager';
+import AnnouncementManager from '@/components/admin/announcement-manager';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -274,7 +276,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
 
         {/* Tabs for different sections */}
         <Tabs defaultValue="services" className="w-full">
-          <TabsList className="grid grid-cols-5 w-full md:w-[750px] mb-4">
+          <TabsList className="grid grid-cols-7 w-full md:w-[950px] mb-4">
             <TabsTrigger value="services" className="flex items-center gap-2">
               <Server className="h-4 w-4" /> Services
             </TabsTrigger>
@@ -283,6 +285,12 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
             </TabsTrigger>
             <TabsTrigger value="modules" className="flex items-center gap-2">
               <Shield className="h-4 w-4" /> Modules
+            </TabsTrigger>
+            <TabsTrigger value="announcements" className="flex items-center gap-2">
+              <Megaphone className="h-4 w-4" /> Announcements
+            </TabsTrigger>
+            <TabsTrigger value="tags" className="flex items-center gap-2">
+              <Tags className="h-4 w-4" /> Tags
             </TabsTrigger>
             <TabsTrigger value="users" className="flex items-center gap-2">
               <Users className="h-4 w-4" /> Users
@@ -305,6 +313,16 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
           {/* Modules Tab */}
           <TabsContent value="modules">
             <ModuleManager />
+          </TabsContent>
+          
+          {/* Announcements Tab */}
+          <TabsContent value="announcements">
+            <AnnouncementManager />
+          </TabsContent>
+          
+          {/* Tags Tab - We're including this in the AnnouncementManager for better UX */}
+          <TabsContent value="tags">
+            <AnnouncementManager />
           </TabsContent>
 
           {/* User Management Tab */}
