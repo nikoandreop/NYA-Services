@@ -13,6 +13,7 @@ const Index = () => {
   const navigate = useNavigate();
   
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
+  const isPreview = window.location.hostname.includes('lovable.app');
   
   // Check for existing session on component mount
   useEffect(() => {
@@ -37,6 +38,32 @@ const Index = () => {
 
   const handleLogin = async (username: string, password: string) => {
     try {
+      // In preview mode, handle the login directly without API call
+      if (isPreview && username === 'admin' && password === 'nyaservices2025') {
+        // Mock successful login
+        const mockToken = 'preview-token-123';
+        const mockUser = {
+          username: 'admin',
+          role: 'admin'
+        };
+        
+        // Store auth data
+        localStorage.setItem('nya_auth_token', mockToken);
+        localStorage.setItem('nya_session_user', mockUser.username);
+        localStorage.setItem('nya_session_role', mockUser.role);
+        
+        setUserName(mockUser.username);
+        setUserRole(mockUser.role);
+        setIsLoggedIn(true);
+        
+        toast({
+          title: "Admin Login successful",
+          description: "Welcome to NYA Services Admin",
+        });
+        return;
+      }
+      
+      // Regular API login for non-preview environments
       const response = await fetch(`${apiUrl}/login`, {
         method: 'POST',
         headers: {
