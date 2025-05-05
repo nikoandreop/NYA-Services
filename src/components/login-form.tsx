@@ -25,48 +25,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
     setError(null);
     
     try {
-      // For preview/development environments, allow direct login with admin credentials
-      if (window.location.hostname.includes('lovable') && username === 'admin' && password === 'nyaservices2025') {
-        setTimeout(() => {
-          setIsLoading(false);
-          toast({
-            title: "Login successful",
-            description: "Welcome to the admin dashboard!",
-          });
-          onLogin(username, password);
-        }, 500);
-        return;
-      }
-
-      // For production environments, attempt API login
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Login failed');
-      }
-
-      const data = await response.json();
+      // Let the parent component handle all login logic
       onLogin(username, password);
-      toast({
-        title: "Login successful",
-        description: "Welcome back!",
-      });
+      setIsLoading(false);
     } catch (error) {
       console.error('Login error:', error);
       setError('Invalid username or password');
-      toast({
-        title: "Login failed",
-        description: "Please check your credentials and try again",
-        variant: "destructive",
-      });
-    } finally {
       setIsLoading(false);
     }
   };

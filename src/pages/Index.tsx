@@ -13,7 +13,7 @@ const Index = () => {
   const navigate = useNavigate();
   
   const apiUrl = import.meta.env.VITE_API_URL || '/api';
-  const isPreview = window.location.hostname.includes('lovable.app');
+  const isPreview = window.location.hostname.includes('lovable') || window.location.hostname === 'localhost';
   
   // Check for existing session on component mount
   useEffect(() => {
@@ -38,9 +38,9 @@ const Index = () => {
 
   const handleLogin = async (username: string, password: string) => {
     try {
-      // In preview mode or if we detect we're in a development environment, handle login directly
-      if ((isPreview || window.location.hostname === 'localhost') && username === 'admin' && password === 'nyaservices2025') {
-        console.log("Using direct login for preview/development environment");
+      // Explicitly check for preview environment
+      if (isPreview && username === 'admin' && password === 'nyaservices2025') {
+        console.log("Using direct login for preview environment");
         // Mock successful login
         const mockToken = 'preview-token-123';
         const mockUser = {
