@@ -2,11 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { LogOut, UserCog, Shield, Ticket, Users, Database, Server, Link } from "lucide-react";
+import { LogOut, UserCog, Shield, Ticket, Users, Database, Server, Link as LinkIcon, Contact, Edit } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import ServiceManager from "@/components/admin/service-manager";
 import ServiceIntegrations from '@/components/admin/service-integrations';
 import ModuleManager from '@/components/admin/module-manager';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Textarea } from "@/components/ui/textarea";
 
 // Mock data for admin systems
 const adminSystems = [
@@ -270,7 +279,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ onLogout }) => {
               <Server className="h-4 w-4" /> Services
             </TabsTrigger>
             <TabsTrigger value="integrations" className="flex items-center gap-2">
-              <Link className="h-4 w-4" /> Integrations
+              <LinkIcon className="h-4 w-4" /> Integrations
             </TabsTrigger>
             <TabsTrigger value="modules" className="flex items-center gap-2">
               <Shield className="h-4 w-4" /> Modules
