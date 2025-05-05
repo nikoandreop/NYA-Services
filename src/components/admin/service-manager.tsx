@@ -17,8 +17,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Trash, Save, RefreshCw, Link, Database, Server, Image, Monitor } from "lucide-react";
+import { Loader2, Plus, Trash, Save, RefreshCw, Link, Database, Server, Image, Monitor, Info } from "lucide-react";
 import { useServiceManager, Service } from '@/contexts/service-manager-context';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const ServiceManager: React.FC = () => {
   const { allServices, addService, updateService, deleteService, toggleService, refreshServiceStatus, isLoading } = useServiceManager();
@@ -40,12 +41,32 @@ const ServiceManager: React.FC = () => {
       url: '',
       uptimePercentage: 100,
       status: 'unknown',
+      info: {
+        description: '',
+        adminPanel: '',
+        documentation: '',
+        version: '',
+        maintainer: '',
+        notes: ''
+      }
     });
     setIsDialogOpen(true);
   };
 
   const handleEditService = (service: Service) => {
-    setEditingService({ ...service });
+    // Ensure service has an info object, even if empty
+    const serviceWithInfo = {
+      ...service,
+      info: service.info || {
+        description: '',
+        adminPanel: '',
+        documentation: '',
+        version: '',
+        maintainer: '',
+        notes: ''
+      }
+    };
+    setEditingService(serviceWithInfo);
     setIsDialogOpen(true);
   };
 
@@ -304,93 +325,219 @@ const ServiceManager: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="service-name" className="text-right">Name</Label>
-              <Input
-                id="service-name"
-                value={editingService?.name || ''}
-                onChange={(e) => setEditingService({...editingService, name: e.target.value})}
-                className="col-span-3"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="service-description" className="text-right">Description</Label>
-              <Textarea
-                id="service-description"
-                value={editingService?.description || ''}
-                onChange={(e) => setEditingService({...editingService, description: e.target.value})}
-                className="col-span-3 resize-none"
-                rows={2}
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="service-url" className="text-right">
-                URL <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="service-url"
-                value={editingService?.url || ''}
-                onChange={(e) => setEditingService({...editingService, url: e.target.value})}
-                placeholder="https://service.nikoa.dev"
-                className="col-span-3"
-              />
-            </div>
-            
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="service-logo" className="text-right">Logo URL</Label>
-              <div className="col-span-3 flex gap-2">
-                <Input
-                  id="service-logo"
-                  value={editingService?.logo || ''}
-                  onChange={(e) => setEditingService({...editingService, logo: e.target.value})}
-                  placeholder="https://example.com/logo.png"
-                  className="flex-grow"
-                />
-                <div className="flex-shrink-0 h-10 w-10 rounded bg-background border flex items-center justify-center overflow-hidden">
-                  {editingService?.logo ? (
-                    <img 
-                      src={editingService.logo} 
-                      alt="Logo preview" 
-                      className="h-full w-full object-contain"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = '/placeholder.svg';
-                      }}
-                    />
-                  ) : (
-                    <Image className="h-5 w-5 opacity-30" />
-                  )}
-                </div>
-              </div>
-            </div>
-            
-            {/* New: Uptime Kuma Integration Options */}
-            {localStorage.getItem('nya_uptime_kuma_url') && (
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="service-monitored" className="text-right">Uptime Kuma</Label>
-                <div className="col-span-3 flex items-center gap-2">
-                  <Switch
-                    id="service-monitored"
-                    checked={editingService?.isMonitored || false}
-                    onCheckedChange={(checked) => setEditingService({
-                      ...editingService,
-                      isMonitored: checked
-                    })}
+          <div className="py-4">
+            <Tabs defaultValue="basic">
+              <TabsList className="w-full">
+                <TabsTrigger value="basic">Basic Info</TabsTrigger>
+                <TabsTrigger value="additional" className="flex items-center gap-1">
+                  <Info className="h-3.5 w-3.5" />
+                  Additional Info
+                </TabsTrigger>
+                <TabsTrigger value="integration">Integrations</TabsTrigger>
+              </TabsList>
+              
+              {/* Basic Service Info Tab */}
+              <TabsContent value="basic" className="space-y-4 pt-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service-name" className="text-right">Name</Label>
+                  <Input
+                    id="service-name"
+                    value={editingService?.name || ''}
+                    onChange={(e) => setEditingService({...editingService, name: e.target.value})}
+                    className="col-span-3"
                   />
-                  <Label htmlFor="service-monitored" className="cursor-pointer">
-                    Monitor with Uptime Kuma
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service-description" className="text-right">Description</Label>
+                  <Textarea
+                    id="service-description"
+                    value={editingService?.description || ''}
+                    onChange={(e) => setEditingService({...editingService, description: e.target.value})}
+                    className="col-span-3 resize-none"
+                    rows={2}
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service-url" className="text-right">
+                    URL <span className="text-destructive">*</span>
                   </Label>
-                  <div className="ml-2">
-                    <Badge variant="outline" className="flex items-center gap-1">
-                      <Monitor className="h-3 w-3" />
-                      Status Integration
-                    </Badge>
+                  <Input
+                    id="service-url"
+                    value={editingService?.url || ''}
+                    onChange={(e) => setEditingService({...editingService, url: e.target.value})}
+                    placeholder="https://service.nikoa.dev"
+                    className="col-span-3"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service-logo" className="text-right">Logo URL</Label>
+                  <div className="col-span-3 flex gap-2">
+                    <Input
+                      id="service-logo"
+                      value={editingService?.logo || ''}
+                      onChange={(e) => setEditingService({...editingService, logo: e.target.value})}
+                      placeholder="https://example.com/logo.png"
+                      className="flex-grow"
+                    />
+                    <div className="flex-shrink-0 h-10 w-10 rounded bg-background border flex items-center justify-center overflow-hidden">
+                      {editingService?.logo ? (
+                        <img 
+                          src={editingService.logo} 
+                          alt="Logo preview" 
+                          className="h-full w-full object-contain"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = '/placeholder.svg';
+                          }}
+                        />
+                      ) : (
+                        <Image className="h-5 w-5 opacity-30" />
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )}
+              </TabsContent>
+              
+              {/* Additional Info Tab */}
+              <TabsContent value="additional" className="space-y-4 pt-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service-info-description" className="text-right">Detailed Description</Label>
+                  <Textarea
+                    id="service-info-description"
+                    value={editingService?.info?.description || ''}
+                    onChange={(e) => setEditingService({
+                      ...editingService, 
+                      info: { 
+                        ...(editingService?.info || {}), 
+                        description: e.target.value 
+                      }
+                    })}
+                    className="col-span-3 resize-none"
+                    rows={3}
+                    placeholder="Provide detailed information about this service..."
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service-admin-panel" className="text-right">Admin Panel URL</Label>
+                  <Input
+                    id="service-admin-panel"
+                    value={editingService?.info?.adminPanel || ''}
+                    onChange={(e) => setEditingService({
+                      ...editingService, 
+                      info: { 
+                        ...(editingService?.info || {}), 
+                        adminPanel: e.target.value 
+                      }
+                    })}
+                    placeholder="https://admin.service.example.com"
+                    className="col-span-3"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service-documentation" className="text-right">Documentation URL</Label>
+                  <Input
+                    id="service-documentation"
+                    value={editingService?.info?.documentation || ''}
+                    onChange={(e) => setEditingService({
+                      ...editingService, 
+                      info: { 
+                        ...(editingService?.info || {}), 
+                        documentation: e.target.value 
+                      }
+                    })}
+                    placeholder="https://docs.service.example.com"
+                    className="col-span-3"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service-version" className="text-right">Version</Label>
+                  <Input
+                    id="service-version"
+                    value={editingService?.info?.version || ''}
+                    onChange={(e) => setEditingService({
+                      ...editingService, 
+                      info: { 
+                        ...(editingService?.info || {}), 
+                        version: e.target.value 
+                      }
+                    })}
+                    placeholder="1.0.0"
+                    className="col-span-3"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service-maintainer" className="text-right">Maintainer</Label>
+                  <Input
+                    id="service-maintainer"
+                    value={editingService?.info?.maintainer || ''}
+                    onChange={(e) => setEditingService({
+                      ...editingService, 
+                      info: { 
+                        ...(editingService?.info || {}), 
+                        maintainer: e.target.value 
+                      }
+                    })}
+                    placeholder="IT Department"
+                    className="col-span-3"
+                  />
+                </div>
+                
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="service-notes" className="text-right">Notes</Label>
+                  <Textarea
+                    id="service-notes"
+                    value={editingService?.info?.notes || ''}
+                    onChange={(e) => setEditingService({
+                      ...editingService, 
+                      info: { 
+                        ...(editingService?.info || {}), 
+                        notes: e.target.value 
+                      }
+                    })}
+                    placeholder="Additional notes about this service..."
+                    className="col-span-3 resize-none"
+                    rows={2}
+                  />
+                </div>
+              </TabsContent>
+              
+              {/* Integrations Tab */}
+              <TabsContent value="integration" className="space-y-4 pt-4">
+                {/* Uptime Kuma Integration */}
+                {localStorage.getItem('nya_uptime_kuma_url') && (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="service-monitored" className="text-right">Uptime Kuma</Label>
+                    <div className="col-span-3 flex items-center gap-2">
+                      <Switch
+                        id="service-monitored"
+                        checked={editingService?.isMonitored || false}
+                        onCheckedChange={(checked) => setEditingService({
+                          ...editingService,
+                          isMonitored: checked
+                        })}
+                      />
+                      <Label htmlFor="service-monitored" className="cursor-pointer">
+                        Monitor with Uptime Kuma
+                      </Label>
+                      <div className="ml-2">
+                        <Badge variant="outline" className="flex items-center gap-1">
+                          <Monitor className="h-3 w-3" />
+                          Status Integration
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Additional integration options can be added here */}
+              </TabsContent>
+            </Tabs>
           </div>
           
           <DialogFooter>

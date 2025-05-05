@@ -38,8 +38,9 @@ const Index = () => {
 
   const handleLogin = async (username: string, password: string) => {
     try {
-      // In preview mode, handle the login directly without API call
-      if (isPreview && username === 'admin' && password === 'nyaservices2025') {
+      // In preview mode or if we detect we're in a development environment, handle login directly
+      if ((isPreview || window.location.hostname === 'localhost') && username === 'admin' && password === 'nyaservices2025') {
+        console.log("Using direct login for preview/development environment");
         // Mock successful login
         const mockToken = 'preview-token-123';
         const mockUser = {
@@ -92,6 +93,7 @@ const Index = () => {
         description: `Welcome to NYA Services${data.user.role === 'admin' ? ' Admin' : ''}`,
       });
     } catch (error) {
+      console.error("Login error:", error);
       toast({
         title: "Login failed",
         description: "Invalid username or password.",

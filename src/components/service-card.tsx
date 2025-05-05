@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
+import ServiceInfoPopup from './service-info-popup';
 
 interface ServiceCardProps {
   name: string;
@@ -9,6 +10,14 @@ interface ServiceCardProps {
   url: string;
   status: 'up' | 'down' | 'degraded' | 'unknown';
   uptimePercentage?: number;
+  info?: {
+    description?: string;
+    adminPanel?: string;
+    documentation?: string;
+    version?: string;
+    maintainer?: string;
+    notes?: string;
+  };
 }
 
 const ServiceCard: React.FC<ServiceCardProps> = ({
@@ -18,6 +27,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   url,
   status,
   uptimePercentage = 0,
+  info,
 }) => {
   const getStatusColor = () => {
     switch (status) {
@@ -38,20 +48,32 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   };
 
   return (
-    <a 
-      href={url} 
-      target="_blank" 
-      rel="noopener noreferrer"
-      className="glass-card rounded-xl p-4 transition-all hover:bg-white/10 hover:scale-[1.02] animate-fade-in"
-    >
+    <div className="glass-card rounded-xl p-4 transition-all hover:bg-white/10 hover:scale-[1.02] animate-fade-in">
       <div className="flex items-center gap-4">
         <div className="h-12 w-12 shrink-0 rounded-md overflow-hidden bg-white/10 p-1">
-          <img src={logo} alt={name} className="h-full w-full object-contain" />
+          <img 
+            src={logo} 
+            alt={name} 
+            className="h-full w-full object-contain"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder.svg';
+            }}
+          />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center justify-between">
             <h3 className="font-medium text-lg truncate">{name}</h3>
-            <ExternalLink size={16} className="text-gray-400" />
+            <div className="flex items-center gap-2">
+              {info && <ServiceInfoPopup info={info} />}
+              <a 
+                href={url} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-primary transition-colors"
+              >
+                <ExternalLink size={16} />
+              </a>
+            </div>
           </div>
           <p className="text-sm text-gray-400 line-clamp-2">{description}</p>
         </div>
@@ -72,7 +94,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
           )}
         </div>
       </div>
-    </a>
+    </div>
   );
 };
 

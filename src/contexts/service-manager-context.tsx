@@ -10,6 +10,15 @@ export interface Service {
   status: 'up' | 'down' | 'degraded' | 'unknown';
   uptimePercentage: number;
   isActive?: boolean;
+  // Info fields for the info popup
+  info?: {
+    description?: string;
+    adminPanel?: string;
+    documentation?: string;
+    version?: string;
+    maintainer?: string;
+    notes?: string;
+  };
   // New fields for Uptime Kuma integration
   monitorId?: string | number;
   isMonitored?: boolean;
