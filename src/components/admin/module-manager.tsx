@@ -1,10 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Settings, Ticket, Server, Activity, Globe, Network } from "lucide-react";
+import { Settings, Ticket, Server, Activity, Globe, Network, Shield } from "lucide-react";
 
 interface Module {
   id: string;
@@ -58,6 +59,13 @@ const ModuleManager = () => {
       enabled: false,
       icon: <Globe className="h-5 w-5" />,
     },
+    {
+      id: 'oauth_login',
+      name: 'OAuth Login',
+      description: 'Enable OAuth login with Authentik',
+      enabled: localStorage.getItem('nya_use_oauth') === 'true',
+      icon: <Shield className="h-5 w-5" />,
+    },
   ]);
 
   const [isSaving, setIsSaving] = useState(false);
@@ -76,12 +84,28 @@ const ModuleManager = () => {
         }))
       );
     }
+    
+    // Check OAuth status
+    const oauthEnabled = localStorage.getItem('nya_use_oauth') === 'true';
+    setModules(prevModules => 
+      prevModules.map(module => 
+        module.id === 'oauth_login' 
+          ? { ...module, enabled: oauthEnabled } 
+          : module
+      )
+    );
   }, []);
 
   const handleToggleModule = (id: string) => {
     setModules(modules.map(module => 
       module.id === id ? { ...module, enabled: !module.enabled } : module
     ));
+    
+    // Special handling for OAuth module
+    if (id === 'oauth_login') {
+      const isEnabling = !modules.find(m => m.id === id)?.enabled;
+      localStorage.setItem('nya_use_oauth', isEnabling.toString());
+    }
   };
 
   const saveModuleSettings = async () => {
@@ -95,6 +119,12 @@ const ModuleManager = () => {
       
       // Save to localStorage for persistence
       localStorage.setItem('nya_active_modules', JSON.stringify(activeModuleIds));
+      
+      // Save OAuth status separately
+      const oauthModule = modules.find(m => m.id === 'oauth_login');
+      if (oauthModule) {
+        localStorage.setItem('nya_use_oauth', oauthModule.enabled.toString());
+      }
       
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));

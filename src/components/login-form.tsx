@@ -1,12 +1,13 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card';
-import { AlertTriangle } from 'lucide-react';
+import { AlertTriangle, Shield } from 'lucide-react';
 import { Alert, AlertDescription } from './ui/alert';
 import { useToast } from "@/hooks/use-toast";
+import { Separator } from './ui/separator';
 
 interface LoginFormProps {
   onLogin: (username: string, password: string) => void;
@@ -18,6 +19,19 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  
+  // OAuth configuration
+  const [useOAuth, setUseOAuth] = useState(false);
+  const [authentikUrl, setAuthentikUrl] = useState('');
+
+  useEffect(() => {
+    // Check if OAuth is configured
+    const oauthEnabled = localStorage.getItem('nya_use_oauth') === 'true';
+    const authUrl = localStorage.getItem('nya_authentik_url') || '';
+    
+    setUseOAuth(oauthEnabled && !!authUrl);
+    setAuthentikUrl(authUrl);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,6 +47,29 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
       setError('Invalid username or password');
       setIsLoading(false);
     }
+  };
+
+  const handleOAuthLogin = () => {
+    const clientId = localStorage.getItem('nya_oauth_client_id');
+    if (!clientId || !authentikUrl) {
+      toast({
+        title: "OAuth Configuration Error",
+        description: "OAuth is not properly configured. Please contact an administrator.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // In a real implementation, we would redirect to the Authentik OAuth endpoint
+    // For now, we'll just show a toast indicating this would happen
+    toast({
+      title: "OAuth Login",
+      description: "In a production environment, this would redirect to Authentik for authentication.",
+    });
+    
+    // This is where the actual redirect would happen:
+    // const redirectUri = localStorage.getItem('nya_oauth_redirect_uri') || `${window.location.origin}/auth/callback`;
+    // window.location.href = `${authentikUrl}/application/o/authorize/?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&scope=openid%20profile%20email`;
   };
 
   return (
@@ -81,10 +118,31 @@ const LoginForm: React.FC<LoginFormProps> = ({ onLogin }) => {
           >
             {isLoading ? 'Signing in...' : 'Sign In'}
           </Button>
+          
+          {useOAuth && (
+            <>
+              <div className="relative my-4">
+                <Separator />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="bg-card px-2 text-xs text-muted-foreground">or</span>
+                </div>
+              </div>
+              
+              <Button 
+                type="button"
+                variant="outline" 
+                className="w-full flex items-center justify-center gap-2" 
+                onClick={handleOAuthLogin}
+              >
+                <Shield className="h-4 w-4" />
+                Sign in with Authentik
+              </Button>
+            </>
+          )}
         </form>
       </CardContent>
       <CardFooter className="flex justify-center text-sm text-gray-400">
-        Local authentication secured by Authentik
+        {useOAuth ? 'Authentication powered by Authentik' : 'Local authentication secured by Authentik'}
       </CardFooter>
     </Card>
   );
