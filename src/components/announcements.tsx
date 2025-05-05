@@ -34,7 +34,7 @@ const announcements = [
 ];
 
 // Map to determine badge variants based on tag type
-const tagVariants: Record<string, string> = {
+const tagVariants: Record<string, "default" | "destructive" | "secondary" | "outline" | "purple" | "success" | "warning" | "yellow"> = {
   service: "default",
   maintenance: "destructive",
   media: "purple",
