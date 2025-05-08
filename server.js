@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -27,17 +26,42 @@ const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const TICKETS_FILE = path.join(DATA_DIR, 'tickets.json');
 const INTEGRATIONS_FILE = path.join(DATA_DIR, 'integrations.json');
 
-// Ensure data directory exists
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// Ensure data directory exists with proper permissions
+try {
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o755 });
+    console.log('Created data directory with permissions 755');
+  }
+} catch (error) {
+  console.error('Error creating data directory:', error);
+  // Try creating in current working directory as fallback
+  const cwdDataDir = path.join(process.cwd(), 'data');
+  if (!fs.existsSync(cwdDataDir)) {
+    try {
+      fs.mkdirSync(cwdDataDir, { recursive: true, mode: 0o755 });
+      console.log('Created data directory in current working directory');
+    } catch (cwdError) {
+      console.error('Failed to create data directory in current working directory:', cwdError);
+    }
+  }
 }
+
+// Helper to safely write files with proper permissions
+const safeWriteFile = (filePath, data) => {
+  try {
+    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), { mode: 0o644 });
+    return true;
+  } catch (error) {
+    console.error(`Error writing to ${filePath}:`, error);
+    return false;
+  }
+};
 
 // Initialize data files if they don't exist
 const initializeDataFiles = () => {
-  if (!fs.existsSync(SERVICES_FILE)) {
-    fs.writeFileSync(
-      SERVICES_FILE,
-      JSON.stringify([
+  try {
+    if (!fs.existsSync(SERVICES_FILE)) {
+      safeWriteFile(SERVICES_FILE, [
         {
           id: '1',
           name: 'Jellyfin',
@@ -58,17 +82,15 @@ const initializeDataFiles = () => {
           uptimePercentage: 99.5,
           adminPanel: 'https://nextcloud-admin.example.com'
         }
-      ])
-    );
-  }
+      ]);
+      console.log('Created services.json file');
+    }
 
-  if (!fs.existsSync(USERS_FILE)) {
-    // Create default admin user with SHA-256 hashed password
-    const adminPassword = crypto.createHash('sha256').update('nyaservices2025').digest('hex');
-    
-    fs.writeFileSync(
-      USERS_FILE,
-      JSON.stringify([
+    if (!fs.existsSync(USERS_FILE)) {
+      // Create default admin user with SHA-256 hashed password
+      const adminPassword = crypto.createHash('sha256').update('nyaservices2025').digest('hex');
+      
+      safeWriteFile(USERS_FILE, [
         {
           id: 1,
           username: 'admin',
@@ -87,14 +109,12 @@ const initializeDataFiles = () => {
           role: 'user',
           status: 'Active'
         }
-      ])
-    );
-  }
+      ]);
+      console.log('Created users.json file');
+    }
 
-  if (!fs.existsSync(TICKETS_FILE)) {
-    fs.writeFileSync(
-      TICKETS_FILE,
-      JSON.stringify([
+    if (!fs.existsSync(TICKETS_FILE)) {
+      safeWriteFile(TICKETS_FILE, [
         {
           id: 'TKT-001',
           subject: 'Jellyfin Buffering Issue',
@@ -108,14 +128,12 @@ const initializeDataFiles = () => {
           ],
           userId: 1
         }
-      ])
-    );
-  }
+      ]);
+      console.log('Created tickets.json file');
+    }
 
-  if (!fs.existsSync(INTEGRATIONS_FILE)) {
-    fs.writeFileSync(
-      INTEGRATIONS_FILE,
-      JSON.stringify({
+    if (!fs.existsSync(INTEGRATIONS_FILE)) {
+      safeWriteFile(INTEGRATIONS_FILE, {
         uptimeKuma: {
           url: '',
           apiKey: ''
@@ -124,31 +142,64 @@ const initializeDataFiles = () => {
           url: '',
           apiKey: ''
         }
-      })
-    );
+      });
+      console.log('Created integrations.json file');
+    }
+    
+    console.log('Data files initialized successfully');
+  } catch (error) {
+    console.error('Error initializing data files:', error);
   }
 };
 
-initializeDataFiles();
+// Try to initialize data files
+try {
+  initializeDataFiles();
+} catch (error) {
+  console.error('Failed to initialize data files:', error);
+}
 
-// Helper to read/write JSON data
+// Helper to read JSON data
 const readJsonFile = (filePath) => {
   try {
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
   } catch (error) {
     console.error(`Error reading ${filePath}:`, error);
+    console.log('Trying to create an empty file...');
+    
+    // If file doesn't exist or is corrupted, try to create an empty one
+    if (filePath === SERVICES_FILE) {
+      safeWriteFile(SERVICES_FILE, []);
+      return [];
+    } else if (filePath === USERS_FILE) {
+      const adminPassword = crypto.createHash('sha256').update('nyaservices2025').digest('hex');
+      safeWriteFile(USERS_FILE, [
+        {
+          id: 1,
+          username: 'admin',
+          password: adminPassword,
+          name: 'Administrator',
+          email: 'admin@example.com',
+          role: 'admin',
+          status: 'Active'
+        }
+      ]);
+      return [{ id: 1, username: 'admin', password: adminPassword, role: 'admin' }];
+    } else if (filePath === TICKETS_FILE) {
+      safeWriteFile(TICKETS_FILE, []);
+      return [];
+    } else if (filePath === INTEGRATIONS_FILE) {
+      const emptyIntegrations = { uptimeKuma: { url: '', apiKey: '' }, authentik: { url: '', apiKey: '' }};
+      safeWriteFile(INTEGRATIONS_FILE, emptyIntegrations);
+      return emptyIntegrations;
+    }
     return null;
   }
 };
 
+// Use safe write function for all file operations
 const writeJsonFile = (filePath, data) => {
-  try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-    return true;
-  } catch (error) {
-    console.error(`Error writing ${filePath}:`, error);
-    return false;
-  }
+  return safeWriteFile(filePath, data);
 };
 
 // Authentication middleware
@@ -480,4 +531,8 @@ app.get('*', (req, res) => {
 // Start server
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`NYA Services Dashboard is available at: http://localhost:${PORT}`);
+  console.log('Default login credentials:');
+  console.log('Username: admin');
+  console.log('Password: nyaservices2025');
 });
