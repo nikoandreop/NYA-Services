@@ -40,12 +40,20 @@ const Index = () => {
     try {
       // Handle special OAuth setup login
       if (username === 'oauthsetup' && password === 'setup2025') {
-        // OAuth setup login is handled in the login form component
+        localStorage.setItem('nya_auth_token', 'setup-token');
+        localStorage.setItem('nya_session_user', 'admin');
+        localStorage.setItem('nya_session_role', 'admin');
+        
         setUserName('admin');
         setUserRole('admin');
         setIsLoggedIn(true);
         
-        // Redirect to admin page after a short delay to allow toast to be seen
+        toast({
+          title: "OAuth Setup Login",
+          description: "Welcome to setup mode",
+        });
+        
+        // Redirect to admin page after a short delay
         setTimeout(() => {
           navigate('/admin');
         }, 1000);
@@ -55,20 +63,13 @@ const Index = () => {
       // Explicitly check for preview environment
       if (isPreview && username === 'admin' && password === 'nyaservices2025') {
         console.log("Using direct login for preview environment");
-        // Mock successful login
-        const mockToken = 'preview-token-123';
-        const mockUser = {
-          username: 'admin',
-          role: 'admin'
-        };
         
-        // Store auth data
-        localStorage.setItem('nya_auth_token', mockToken);
-        localStorage.setItem('nya_session_user', mockUser.username);
-        localStorage.setItem('nya_session_role', mockUser.role);
+        localStorage.setItem('nya_auth_token', 'preview-token');
+        localStorage.setItem('nya_session_user', 'admin');
+        localStorage.setItem('nya_session_role', 'admin');
         
-        setUserName(mockUser.username);
-        setUserRole(mockUser.role);
+        setUserName('admin');
+        setUserRole('admin');
         setIsLoggedIn(true);
         
         toast({
@@ -78,7 +79,9 @@ const Index = () => {
         return;
       }
       
-      // Regular API login for non-preview environments
+      // Regular API login
+      console.log(`Attempting to login with API at ${apiUrl}/login`);
+      
       const response = await fetch(`${apiUrl}/login`, {
         method: 'POST',
         headers: {
@@ -88,12 +91,14 @@ const Index = () => {
       });
       
       if (!response.ok) {
-        throw new Error('Login failed');
+        const errorData = await response.json();
+        console.error("Login error response:", errorData);
+        throw new Error(errorData.error || 'Login failed');
       }
       
       const data = await response.json();
+      console.log("Login successful, received data:", data);
       
-      // Store auth data
       localStorage.setItem('nya_auth_token', data.token);
       localStorage.setItem('nya_session_user', data.user.username);
       localStorage.setItem('nya_session_role', data.user.role);
@@ -106,11 +111,15 @@ const Index = () => {
         title: data.user.role === 'admin' ? "Admin Login successful" : "Login successful",
         description: `Welcome to NYA Services${data.user.role === 'admin' ? ' Admin' : ''}`,
       });
+      
+      if (data.user.role === 'admin') {
+        navigate('/admin');
+      }
     } catch (error) {
       console.error("Login error:", error);
       toast({
         title: "Login failed",
-        description: "Invalid username or password.",
+        description: error instanceof Error ? error.message : "Invalid username or password",
         variant: "destructive",
       });
     }
@@ -128,6 +137,8 @@ const Index = () => {
       title: "Logged out",
       description: "You have been logged out successfully",
     });
+    
+    navigate('/');
   };
 
   return (

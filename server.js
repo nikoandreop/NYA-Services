@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -19,37 +20,57 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Data directory
-const DATA_DIR = path.join(__dirname, 'data');
+// Data directory - try multiple locations
+const DATA_DIRS = [
+  path.join(__dirname, 'data'),
+  path.join(process.cwd(), 'data'),
+  '/app/data'
+];
+
+// Find a writable data directory
+let DATA_DIR;
+for (const dir of DATA_DIRS) {
+  try {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true, mode: 0o777 });
+      console.log(`Created data directory at ${dir} with permissions 777`);
+    }
+    
+    // Test if directory is writable
+    const testFile = path.join(dir, '.write-test');
+    fs.writeFileSync(testFile, 'test', { mode: 0o666 });
+    fs.unlinkSync(testFile);
+    
+    DATA_DIR = dir;
+    console.log(`Using data directory: ${DATA_DIR}`);
+    break;
+  } catch (error) {
+    console.error(`Cannot use data directory ${dir}:`, error);
+  }
+}
+
+if (!DATA_DIR) {
+  console.error('FATAL ERROR: Could not find or create a writable data directory');
+  process.exit(1);
+}
+
+// Define data file paths
 const SERVICES_FILE = path.join(DATA_DIR, 'services.json');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
 const TICKETS_FILE = path.join(DATA_DIR, 'tickets.json');
 const INTEGRATIONS_FILE = path.join(DATA_DIR, 'integrations.json');
 
-// Ensure data directory exists with proper permissions
-try {
-  if (!fs.existsSync(DATA_DIR)) {
-    fs.mkdirSync(DATA_DIR, { recursive: true, mode: 0o755 });
-    console.log('Created data directory with permissions 755');
-  }
-} catch (error) {
-  console.error('Error creating data directory:', error);
-  // Try creating in current working directory as fallback
-  const cwdDataDir = path.join(process.cwd(), 'data');
-  if (!fs.existsSync(cwdDataDir)) {
-    try {
-      fs.mkdirSync(cwdDataDir, { recursive: true, mode: 0o755 });
-      console.log('Created data directory in current working directory');
-    } catch (cwdError) {
-      console.error('Failed to create data directory in current working directory:', cwdError);
-    }
-  }
-}
-
 // Helper to safely write files with proper permissions
 const safeWriteFile = (filePath, data) => {
   try {
-    fs.writeFileSync(filePath, JSON.stringify(data, null, 2), { mode: 0o644 });
+    const dirPath = path.dirname(filePath);
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true, mode: 0o777 });
+    }
+    
+    const jsonData = JSON.stringify(data, null, 2);
+    fs.writeFileSync(filePath, jsonData, { mode: 0o666 });
+    console.log(`Successfully wrote to ${filePath}`);
     return true;
   } catch (error) {
     console.error(`Error writing to ${filePath}:`, error);
@@ -57,9 +78,23 @@ const safeWriteFile = (filePath, data) => {
   }
 };
 
+// Helper to read JSON data
+const readJsonFile = (filePath) => {
+  try {
+    if (!fs.existsSync(filePath)) {
+      return null;
+    }
+    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
+  } catch (error) {
+    console.error(`Error reading ${filePath}:`, error);
+    return null;
+  }
+};
+
 // Initialize data files if they don't exist
 const initializeDataFiles = () => {
   try {
+    // Check if services file exists, if not create it
     if (!fs.existsSync(SERVICES_FILE)) {
       safeWriteFile(SERVICES_FILE, [
         {
@@ -83,13 +118,11 @@ const initializeDataFiles = () => {
           adminPanel: 'https://nextcloud-admin.example.com'
         }
       ]);
-      console.log('Created services.json file');
     }
 
+    // Check if users file exists, if not create it
     if (!fs.existsSync(USERS_FILE)) {
-      // Create default admin user with SHA-256 hashed password
       const adminPassword = crypto.createHash('sha256').update('nyaservices2025').digest('hex');
-      
       safeWriteFile(USERS_FILE, [
         {
           id: 1,
@@ -110,9 +143,9 @@ const initializeDataFiles = () => {
           status: 'Active'
         }
       ]);
-      console.log('Created users.json file');
     }
 
+    // Check if tickets file exists, if not create it
     if (!fs.existsSync(TICKETS_FILE)) {
       safeWriteFile(TICKETS_FILE, [
         {
@@ -129,9 +162,9 @@ const initializeDataFiles = () => {
           userId: 1
         }
       ]);
-      console.log('Created tickets.json file');
     }
 
+    // Check if integrations file exists, if not create it
     if (!fs.existsSync(INTEGRATIONS_FILE)) {
       safeWriteFile(INTEGRATIONS_FILE, {
         uptimeKuma: {
@@ -143,7 +176,6 @@ const initializeDataFiles = () => {
           apiKey: ''
         }
       });
-      console.log('Created integrations.json file');
     }
     
     console.log('Data files initialized successfully');
@@ -153,54 +185,7 @@ const initializeDataFiles = () => {
 };
 
 // Try to initialize data files
-try {
-  initializeDataFiles();
-} catch (error) {
-  console.error('Failed to initialize data files:', error);
-}
-
-// Helper to read JSON data
-const readJsonFile = (filePath) => {
-  try {
-    return JSON.parse(fs.readFileSync(filePath, 'utf8'));
-  } catch (error) {
-    console.error(`Error reading ${filePath}:`, error);
-    console.log('Trying to create an empty file...');
-    
-    // If file doesn't exist or is corrupted, try to create an empty one
-    if (filePath === SERVICES_FILE) {
-      safeWriteFile(SERVICES_FILE, []);
-      return [];
-    } else if (filePath === USERS_FILE) {
-      const adminPassword = crypto.createHash('sha256').update('nyaservices2025').digest('hex');
-      safeWriteFile(USERS_FILE, [
-        {
-          id: 1,
-          username: 'admin',
-          password: adminPassword,
-          name: 'Administrator',
-          email: 'admin@example.com',
-          role: 'admin',
-          status: 'Active'
-        }
-      ]);
-      return [{ id: 1, username: 'admin', password: adminPassword, role: 'admin' }];
-    } else if (filePath === TICKETS_FILE) {
-      safeWriteFile(TICKETS_FILE, []);
-      return [];
-    } else if (filePath === INTEGRATIONS_FILE) {
-      const emptyIntegrations = { uptimeKuma: { url: '', apiKey: '' }, authentik: { url: '', apiKey: '' }};
-      safeWriteFile(INTEGRATIONS_FILE, emptyIntegrations);
-      return emptyIntegrations;
-    }
-    return null;
-  }
-};
-
-// Use safe write function for all file operations
-const writeJsonFile = (filePath, data) => {
-  return safeWriteFile(filePath, data);
-};
+initializeDataFiles();
 
 // Authentication middleware
 const authenticate = (req, res, next) => {
@@ -213,8 +198,11 @@ const authenticate = (req, res, next) => {
     // Simple token validation (in production, use proper JWT verification)
     const [username, timestamp] = Buffer.from(token, 'base64').toString().split(':');
     const users = readJsonFile(USERS_FILE);
-    const user = users.find(u => u.username === username);
+    if (!users) {
+      return res.status(500).json({ error: 'Error reading users data' });
+    }
     
+    const user = users.find(u => u.username === username);
     if (!user) {
       return res.status(401).json({ error: 'Invalid token' });
     }
@@ -290,7 +278,7 @@ app.post('/api/services', authenticate, isAdmin, (req, res) => {
   };
 
   services.push(newService);
-  if (!writeJsonFile(SERVICES_FILE, services)) {
+  if (!safeWriteFile(SERVICES_FILE, services)) {
     return res.status(500).json({ error: 'Error saving service' });
   }
 
@@ -309,7 +297,7 @@ app.put('/api/services/:id', authenticate, isAdmin, (req, res) => {
   }
 
   services[index] = { ...services[index], ...req.body };
-  if (!writeJsonFile(SERVICES_FILE, services)) {
+  if (!safeWriteFile(SERVICES_FILE, services)) {
     return res.status(500).json({ error: 'Error updating service' });
   }
 
@@ -327,7 +315,7 @@ app.delete('/api/services/:id', authenticate, isAdmin, (req, res) => {
     return res.status(404).json({ error: 'Service not found' });
   }
 
-  if (!writeJsonFile(SERVICES_FILE, filteredServices)) {
+  if (!safeWriteFile(SERVICES_FILE, filteredServices)) {
     return res.status(500).json({ error: 'Error deleting service' });
   }
 
@@ -372,7 +360,7 @@ app.post('/api/users', authenticate, isAdmin, (req, res) => {
   };
 
   users.push(newUser);
-  if (!writeJsonFile(USERS_FILE, users)) {
+  if (!safeWriteFile(USERS_FILE, users)) {
     return res.status(500).json({ error: 'Error saving user' });
   }
 
@@ -401,7 +389,7 @@ app.put('/api/users/:id', authenticate, isAdmin, (req, res) => {
   }
 
   users[index] = { ...users[index], ...userData };
-  if (!writeJsonFile(USERS_FILE, users)) {
+  if (!safeWriteFile(USERS_FILE, users)) {
     return res.status(500).json({ error: 'Error updating user' });
   }
 
@@ -442,7 +430,7 @@ app.post('/api/tickets', authenticate, (req, res) => {
   };
 
   tickets.push(newTicket);
-  if (!writeJsonFile(TICKETS_FILE, tickets)) {
+  if (!safeWriteFile(TICKETS_FILE, tickets)) {
     return res.status(500).json({ error: 'Error saving ticket' });
   }
 
@@ -466,7 +454,7 @@ app.put('/api/tickets/:id', authenticate, (req, res) => {
   }
 
   tickets[index] = { ...tickets[index], ...req.body };
-  if (!writeJsonFile(TICKETS_FILE, tickets)) {
+  if (!safeWriteFile(TICKETS_FILE, tickets)) {
     return res.status(500).json({ error: 'Error updating ticket' });
   }
 
@@ -500,7 +488,7 @@ app.post('/api/tickets/:id/messages', authenticate, (req, res) => {
   }
   tickets[index].messages.push(newMessage);
 
-  if (!writeJsonFile(TICKETS_FILE, tickets)) {
+  if (!safeWriteFile(TICKETS_FILE, tickets)) {
     return res.status(500).json({ error: 'Error adding message' });
   }
 
@@ -517,7 +505,7 @@ app.get('/api/integrations', authenticate, isAdmin, (req, res) => {
 });
 
 app.put('/api/integrations', authenticate, isAdmin, (req, res) => {
-  if (!writeJsonFile(INTEGRATIONS_FILE, req.body)) {
+  if (!safeWriteFile(INTEGRATIONS_FILE, req.body)) {
     return res.status(500).json({ error: 'Error saving integrations' });
   }
   res.json(req.body);
