@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -5,7 +6,6 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
-import { match } from 'path-to-regexp';
 
 // Get __dirname equivalent in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -518,22 +518,15 @@ app.put('/api/integrations', authenticate, isAdmin, (req, res) => {
 // SERVING STATIC FILES & CLIENT ROUTES
 // =========================================================
 
-// API route matcher
-const apiMatcher = match('/api/:path*');
-
 // Handle API 404s separately
-app.use((req, res, next) => {
-  if (req.path.startsWith('/api') && !res.headersSent) {
-    return res.status(404).json({ error: 'API endpoint not found' });
-  }
-  next();
+app.use('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
 });
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'dist')));
 
 // For all other requests, send the React app
-// This allows client-side routing to handle all non-API routes
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
