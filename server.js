@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -18,7 +17,6 @@ const PORT = process.env.PORT || 3001;
 // Apply middleware
 app.use(cors());
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'dist')));
 
 // Data directory - try multiple locations
 const DATA_DIRS = [
@@ -32,13 +30,13 @@ let DATA_DIR;
 for (const dir of DATA_DIRS) {
   try {
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true, mode: 0o777 });
-      console.log(`Created data directory at ${dir} with permissions 777`);
+      fs.mkdirSync(dir, { recursive: true, mode: 0o755 });
+      console.log(`Created data directory at ${dir} with permissions 755`);
     }
     
     // Test if directory is writable
     const testFile = path.join(dir, '.write-test');
-    fs.writeFileSync(testFile, 'test', { mode: 0o666 });
+    fs.writeFileSync(testFile, 'test', { mode: 0o644 });
     fs.unlinkSync(testFile);
     
     DATA_DIR = dir;
@@ -221,6 +219,9 @@ const isAdmin = (req, res, next) => {
   }
   next();
 };
+
+// API Routes
+// =========================================================
 
 // Auth routes
 app.post('/api/login', (req, res) => {
@@ -511,7 +512,17 @@ app.put('/api/integrations', authenticate, isAdmin, (req, res) => {
   res.json(req.body);
 });
 
-// Serve React app for all other routes
+// Static file serving - IMPORTANT: Do this BEFORE the catch-all route
+// Serve static files from the dist directory
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Route all API requests that haven't been caught yet
+app.all('/api/*', (req, res) => {
+  res.status(404).json({ error: 'API endpoint not found' });
+});
+
+// Serve index.html for all other routes (SPA fallback)
+// This avoids path-to-regexp errors by using a simpler routing pattern
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
