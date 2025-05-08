@@ -518,8 +518,8 @@ app.put('/api/integrations', authenticate, isAdmin, (req, res) => {
 // SERVING STATIC FILES & CLIENT ROUTES
 // =========================================================
 
-// Handle API 404s separately
-app.use('/api/*', (req, res) => {
+// API routes that weren't matched above are 404s
+app.all('/api/*', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
