@@ -30,13 +30,13 @@ let DATA_DIR;
 for (const dir of DATA_DIRS) {
   try {
     if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true, mode: 0o755 });
-      console.log(`Created data directory at ${dir} with permissions 755`);
+      fs.mkdirSync(dir, { recursive: true, mode: 0o777 });
+      console.log(`Created data directory at ${dir} with permissions 777`);
     }
     
     // Test if directory is writable
     const testFile = path.join(dir, '.write-test');
-    fs.writeFileSync(testFile, 'test', { mode: 0o644 });
+    fs.writeFileSync(testFile, 'test', { mode: 0o666 });
     fs.unlinkSync(testFile);
     
     DATA_DIR = dir;
@@ -220,7 +220,7 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-// API Routes
+// Set up API routes
 // =========================================================
 
 // Auth routes
@@ -512,18 +512,18 @@ app.put('/api/integrations', authenticate, isAdmin, (req, res) => {
   res.json(req.body);
 });
 
-// Static file serving - IMPORTANT: Do this BEFORE the catch-all route
-// Serve static files from the dist directory
+// IMPORTANT: The order matters!
+// 1. First serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// Route all API requests that haven't been caught yet
-app.all('/api/*', (req, res) => {
+// 2. Then create a catch-all for API requests that haven't been handled yet
+app.use('/api/*', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
-// Serve index.html for all other routes (SPA fallback)
-// This avoids path-to-regexp errors by using a simpler routing pattern
-app.get('*', (req, res) => {
+// 3. Finally, for any other route, serve the React app without using path-to-regexp matching
+// This is the fix for the path-to-regexp error
+app.use('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
