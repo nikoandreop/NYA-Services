@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -5,6 +6,7 @@ import path from 'path';
 import bodyParser from 'body-parser';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
+import { match, pathToRegexp } from 'path-to-regexp';
 
 // Get __dirname equivalent in ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -517,17 +519,31 @@ app.put('/api/integrations', authenticate, isAdmin, (req, res) => {
 // SERVING STATIC FILES & CLIENT ROUTES
 // =========================================================
 
-// Serve static files first
-app.use(express.static(path.join(__dirname, 'dist')));
+// Create path matchers using path-to-regexp
+const apiPathMatcher = match('/api/:path*', { decode: decodeURIComponent });
 
-// API 404 handler for any remaining API routes
-app.use('/api', (req, res) => {
-  res.status(404).json({ error: 'API endpoint not found' });
+// Custom middleware to handle API routes
+app.use((req, res, next) => {
+  // Check if this is an API request
+  const apiMatch = apiPathMatcher(req.path);
+  
+  // If it's an API request but not matched by our defined routes
+  if (apiMatch && !res.headersSent) {
+    return res.status(404).json({ error: 'API endpoint not found' });
+  }
+  
+  next();
 });
 
-// Send the React app for any other routes
-// This must be the LAST route
+// Serve static files
+app.use(express.static(path.join(__dirname, 'dist')));
+
+// Create a matcher for client-side routes
+const adminPathRegexp = pathToRegexp('/admin/:path*');
+
+// For all other requests, send the React app
 app.use('*', (req, res) => {
+  // We've ensured all API routes are handled before reaching here
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
