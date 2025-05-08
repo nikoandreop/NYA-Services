@@ -1,4 +1,3 @@
-
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -518,16 +517,17 @@ app.put('/api/integrations', authenticate, isAdmin, (req, res) => {
 // SERVING STATIC FILES & CLIENT ROUTES
 // =========================================================
 
-// First, serve static files from the dist directory
+// Serve static files first
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// API routes 404 handler (must be before the catch-all route)
-app.all('/api/*', (req, res) => {
+// API 404 handler for any remaining API routes
+app.use('/api', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
-// Catch-all route - Send the React app for client-side routing
-app.get('*', (req, res) => {
+// Send the React app for any other routes
+// This must be the LAST route
+app.use('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
