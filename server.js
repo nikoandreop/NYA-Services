@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cors from 'cors';
 import fs from 'fs';
@@ -517,16 +518,15 @@ app.put('/api/integrations', authenticate, isAdmin, (req, res) => {
 // SERVING STATIC FILES & CLIENT ROUTES
 // =========================================================
 
-// 1. Serve static files from the dist directory
+// First, serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// 2. Handle API 404s explicitly
-app.all('/api/*', (req, res) => {
+// Handle API 404s explicitly
+app.use('/api', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
-// 3. Always serve index.html for any remaining requests - SPA client-side routing
-// This approach completely avoids path-to-regexp
+// For all other routes, send the index.html file
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
