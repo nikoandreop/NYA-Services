@@ -518,16 +518,16 @@ app.put('/api/integrations', authenticate, isAdmin, (req, res) => {
 // SERVING STATIC FILES & CLIENT ROUTES
 // =========================================================
 
-// Static files - Serve these first
+// First, serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// API 404 handler - Only for paths that start with /api
-app.use('/api/*', (req, res) => {
+// API routes 404 handler (must be before the catch-all route)
+app.all('/api/*', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
-// React app fallback - Using a simple string path to avoid regex issues
-app.get('/*', (req, res) => {
+// Catch-all route - Send the React app for client-side routing
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
