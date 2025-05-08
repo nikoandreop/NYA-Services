@@ -220,7 +220,8 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-// Set up API routes
+// =========================================================
+// API ROUTES
 // =========================================================
 
 // Auth routes
@@ -512,18 +513,21 @@ app.put('/api/integrations', authenticate, isAdmin, (req, res) => {
   res.json(req.body);
 });
 
-// IMPORTANT: The order matters!
-// 1. First serve static files from the dist directory
+// =========================================================
+// SERVING STATIC FILES & CLIENT ROUTES
+// =========================================================
+
+// 1. Serve static files from the dist directory
 app.use(express.static(path.join(__dirname, 'dist')));
 
-// 2. Then create a catch-all for API requests that haven't been handled yet
-app.use('/api/*', (req, res) => {
+// 2. Handle API 404s explicitly
+app.all('/api/*', (req, res) => {
   res.status(404).json({ error: 'API endpoint not found' });
 });
 
-// 3. Finally, for any other route, serve the React app without using path-to-regexp matching
-// This is the fix for the path-to-regexp error
-app.use('*', (req, res) => {
+// 3. Always serve index.html for any remaining requests - SPA client-side routing
+// This approach completely avoids path-to-regexp
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
